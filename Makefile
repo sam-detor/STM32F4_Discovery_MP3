@@ -1,6 +1,6 @@
 # Project sources
-SRCS = main.c stm32f4xx_it.c system_stm32f4xx.c syscalls.c utils.c
-SRCS += Audio.c mp3_data.c
+SRCS = main.c stm32f4xx_it.c system_stm32f4xx.c syscalls.c utils.c 
+SRCS += Audio.c mp3_data.c HALReplacements.c PacketHandling.c RecieveData.c SendData.c Tests.c
 
 # all the files will be generated with this name (main.elf, main.bin, main.hex, etc)
 
@@ -100,4 +100,8 @@ flash:
 	$(OPENOCD) -d2 -f $(OPENOCD_INTERFACE) $(OPENOCD_CMDS) -f $(OPENOCD_TARGET) -c init -c targets -c "reset halt" \
                  -c "flash write_image erase $(PROG).bin $(LOAD_ADDRESS) bin" \
                  -c "verify_image $(PROG).bin $(LOAD_ADDRESS) bin" -c "reset run" -c shutdown
+
+debug:
+	@$(DBG) --eval-command="target extended-remote :4242" \
+	$(PROG).elf
 	

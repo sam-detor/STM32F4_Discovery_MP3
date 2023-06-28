@@ -1,16 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <math.h>
-#include "stm32f4xx_conf.h"
 #include "utils.h"
 #include "Audio.h"
 #include "mp3dec.h"
+#include "main.h"
 
 // Private variables
 volatile uint32_t time_var1, time_var2;
 MP3FrameInfo mp3FrameInfo;
 HMP3Decoder hMP3Decoder;
+volatile uint32_t tick_ms;
+char message[1000] = "The maximum decimal numbla that can la represented with 1 byte is 255 or 1111";
 
 // Private function prototypes
 static void AudioCallback(void *context,int buffer);
@@ -25,19 +23,51 @@ extern const char mp3_data[];
 #define BUTTON		(GPIOA->IDR & GPIO_Pin_0)
 
 int main(void) {
+	
 	init();
 	int volume = 0;
+	char str[2] = "c";
+	int ret;
+	int set = 0;
+
+	while (1)
+	{
+		ret = recieve((uint8_t *) message, 77,800, UART4);
+		//HAL_UART_Recieve(UART4,(uint8_t *) message ,77,800);
+		if(ret == 0)
+		{
+			//send((uint8_t *) message, 800, 77, UART4);
+			HAL_UART_Transmit(UART4,(uint8_t *) message ,77,800);
+			//Delay(2 * 1e3);
+			
+		}
+		else if (ret != -1)
+		{
+			GPIO_SetBits(GPIOD, GPIO_Pin_14);
+		}
+		else if (ret == -1)
+		{
+			if (set)
+			{
+				GPIO_ResetBits(GPIOD, GPIO_Pin_13);
+				set = 0;
+			}
+			else
+			{
+				GPIO_SetBits(GPIOD, GPIO_Pin_13);
+				set = 1;
+			}
+		}
+	}
 
 	// Play mp3
-	hMP3Decoder = MP3InitDecoder();
+	/*hMP3Decoder = MP3InitDecoder();
 	InitializeAudio(Audio44100HzSettings);
 	SetAudioVolume(0xCF);
 	PlayAudioWithCallback(AudioCallback, 0);
 
 	for(;;) {
-		/*
-		 * Check if user button is pressed
-		 */
+		 //Check if user button is pressed
 		if (BUTTON) {
 			// Debounce
 			Delay(10);
@@ -57,7 +87,7 @@ int main(void) {
 			}
 		}
 	}
-
+	*/
 	return 0;
 }
 
@@ -124,7 +154,7 @@ static void AudioCallback(void *context, int buffer) {
 	}
 }
 
-void init() {
+void init() { //COULD BE OFFBOARDED TO START
 	GPIO_InitTypeDef  GPIO_InitStructure;
 	USART_InitTypeDef USART_InitStructure;
 	// ---------- SysTick timer -------- //
@@ -151,19 +181,19 @@ void init() {
 	// ------ UART ------ //
 
 	// Clock
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
 
 	// IO
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_6;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-	GPIO_Init(GPIOD, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
 
-	GPIO_PinAFConfig(GPIOD, GPIO_PinSource5, GPIO_AF_USART1);
-	GPIO_PinAFConfig(GPIOD, GPIO_PinSource6, GPIO_AF_USART1);
+	GPIO_PinAFConfig(GPIOC, GPIO_PinSource10, GPIO_AF_UART4);
+	GPIO_PinAFConfig(GPIOC, GPIO_PinSource11, GPIO_AF_UART4);
 
 	// Conf
 	USART_InitStructure.USART_BaudRate = 115200;
@@ -172,10 +202,10 @@ void init() {
 	USART_InitStructure.USART_Parity = USART_Parity_No;
 	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
 	USART_InitStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
-	USART_Init(USART2, &USART_InitStructure);
+	USART_Init(UART4, &USART_InitStructure);
 
 	// Enable
-	USART_Cmd(USART2, ENABLE);
+	USART_Cmd(UART4, ENABLE);
 }
 
 /*
@@ -187,7 +217,19 @@ void timing_handler() {
 	}
 
 	time_var2++;
+	tick_ms++;
 }
+
+/**
+ * @brief Return the systick val in ms
+ * 
+ * @return
+ */
+uint32_t getTick()
+{
+	return tick_ms;
+}
+
 
 /*
  * Delay a number of systick cycles
