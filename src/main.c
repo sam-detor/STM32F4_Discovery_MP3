@@ -12,8 +12,8 @@ HMP3Decoder hMP3Decoder;
 volatile uint32_t tick_ms;
 //char message[1908] = "The maximum decimal numbla that can la represented with 1 byte is 255 or 1111";
 uint32_t mainStack;
-uint32_t ramStack = 0x20001480;
-uint32_t svcStack = 0x20020800;
+uint32_t ramStack = 0x20001924; //RAM_CODE_START + sizeOfFile + 0x400
+//uint32_t svcStack = 0x20020800;
 
 
 // Private function prototypes
@@ -33,9 +33,6 @@ int main(void) {
 	
 	init();
 	int volume = 0;
-	char str[2] = "c";
-	int ret;
-	int sizeOfFile = 1908;
 
 	//trying to disable internal buffer
 	SCnSCB->ACTLR |= SCnSCB_ACTLR_DISDEFWBUF_Msk;
@@ -43,25 +40,10 @@ int main(void) {
 	//enable all fault catching regs
 	SCB->SHCSR |= SCB_SHCSR_USGFAULTENA_Msk | SCB_SHCSR_BUSFAULTENA_Msk | SCB_SHCSR_MEMFAULTENA_Msk;
 
+	// Play mp3
+	hMP3Decoder = MP3InitDecoder();
 	remoteInit();
 	GPIO_SetBits(GPIOD, GPIO_Pin_14);
-
-	/* while (1)
-	{
-		ret = recieve((uint8_t*) 0x20000000 , sizeOfFile, 400, UART4);
-		if (ret == 0)
-		{
-			HAL_UART_Transmit(UART4, (uint8_t*) 0x20000000, sizeOfFile, 400);
-			GPIO_SetBits(GPIOD, GPIO_Pin_14);
-			while (1);
-		}
-		
-	} */
-
-	/* // Play mp3
-	hMP3Decoder = MP3InitDecoder();
-	InitializeAudio(Audio44100HzSettings);
-	SetAudioVolume(0xCF);
 	PlayAudioWithCallback(AudioCallback, 0);
 
 	for(;;) {
@@ -84,7 +66,7 @@ int main(void) {
 				while(BUTTON){};
 			}
 		}
-	} */
+	}
 	return 0;
 }
 
@@ -324,7 +306,7 @@ int Service_Call_Default(void)
 int remoteInit(void)
 {
 	int ret = -1;
-	int sizeOfFile = 1908;
+	int sizeOfFile = 3092;
 	while (1)
 	{
 		ret = recieve((uint8_t*) RAM_CODE_START , sizeOfFile, 400, UART4);

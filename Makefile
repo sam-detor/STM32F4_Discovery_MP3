@@ -113,12 +113,14 @@ ICFLAGS += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 ICFLAGS += -Iinc -Ilib -Ilib/inc 
 ICFLAGS += -Ilib/inc/core -Ilib/inc/peripherals
 
+ISRCS = /Users/samdetor/STM32F4_Discovery_MP3/src/InitCode.c /Users/samdetor/STM32F4_Discovery_MP3/src/Audio.c
+
 init-code:
 	$(CC) $(ICFLAGS) /Users/samdetor/STM32F4_Discovery_MP3/src/InitCode.c -o $(OUTPATH)/InitCode -Llib -lstm32f4
 	$(OBJCOPY) -O binary $(OUTPATH)/InitCode.elf $(OUTPATH)/InitCode.bin
 	
-$(OUTPATH)/InitCode.elf: /Users/samdetor/STM32F4_Discovery_MP3/src/InitCode.o
-	$(CC) $(ICFLAGS) /Users/samdetor/STM32F4_Discovery_MP3/src/InitCode.c -o $(OUTPATH)/InitCode -Llib -lstm32f4
+$(OUTPATH)/InitCode.elf:
+	$(CC) $(ICFLAGS) $(ISRCS) -o $(OUTPATH)/InitCode -Llib -lstm32f4
 	$(OBJCOPY) -O binary $(OUTPATH)/InitCode $(OUTPATH)/InitCode.bin	
 
 init-code-2: $(OUTPATH)/InitCode.elf

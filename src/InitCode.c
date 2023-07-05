@@ -1,4 +1,5 @@
 #include "stm32f4xx_conf.h"
+#include "Audio.h"
 int init(void)
 {
     GPIO_InitTypeDef  GPIO_InitStructure;
@@ -14,6 +15,9 @@ int init(void)
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
 	GPIO_Init(GPIOD, &GPIO_InitStructure);
 
-    GPIO_SetBits(GPIOD, GPIO_Pin_15); //BLUE LED!!!
+	InitializeAudio(Audio44100HzSettings);
+	SetAudioVolume(0xCF);
+
+	GPIO_SetBits(GPIOD, GPIO_Pin_15); //BLUE LED!!!
     return 0;
 }
