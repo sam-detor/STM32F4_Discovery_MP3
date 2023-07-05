@@ -10,10 +10,8 @@ volatile uint32_t time_var1, time_var2;
 MP3FrameInfo mp3FrameInfo;
 HMP3Decoder hMP3Decoder;
 volatile uint32_t tick_ms;
-//char message[1908] = "The maximum decimal numbla that can la represented with 1 byte is 255 or 1111";
 uint32_t mainStack;
-uint32_t ramStack = 0x20001924; //RAM_CODE_START + sizeOfFile + 0x400
-//uint32_t svcStack = 0x20020800;
+uint32_t ramStack = 0x20001930; //RAM_CODE_START + sizeOfFile + 0x400 + whatever it takes to be double word aligned (just in case)
 
 
 // Private function prototypes
@@ -229,70 +227,32 @@ void _init() {
 
 int Service_Call_42(void)
 {
-	uint32_t retAddy = (uint32_t) Service_Call_43 | 1;
-	uint32_t xPSR = 1 << 24;
 	uint32_t ramCodeStart = 0x20000911;
 	asm(
 		"MRS %0, MSP\n\t"
-		: "=r" (mainStack));
+		: "=r" (mainStack)); //save main stakc
 	asm(
-		"MSR MSP, %0\n\t"
+		"MSR MSP, %0\n\t" //switch to RAM stack
 		:
 		: "r" (ramStack));
- 	asm(	
-		"PUSH #0\n\t"
-		"PUSH #0\n\t"
-		"PUSH #0\n\t"
-		"PUSH #0\n\t"
-		"PUSH #0\n\t"
-		"PUSH #0\n\t"
-		"PUSH #0\n\t"
-		"PUSH #0\n\t"
-		"PUSH #0\n\t"
-		"PUSH #0\n\t"
-		"PUSH #0\n\t"
-		"PUSH #0\n\t"
-		"PUSH #0\n\t"
-		"PUSH #0\n\t"
-		"PUSH #0\n\t"
-		"PUSH #0\n\t"
-		"PUSH #0\n\t");
 	asm(
-		"PUSH {%1}\n\t"
-		"PUSH {%0}\n\t"
-		"PUSH {%0}\n\t"
-		:
-		:"r" (retAddy),"r" (xPSR));
+		"LDR  lr, =Service_Call_43\n\t"); //have the RAM code return to the Service_Call_43 method
 	asm(
-		"PUSH #0\n\t"
-		"PUSH #0\n\t"
-		"PUSH #0\n\t"
-		"PUSH #0\n\t"
-		"PUSH #0\n\t");
-	asm(
-		"LDR  lr, =Service_Call_43\n\t");
-	asm(
-		"BX %0\n\t"
+		"BX %0\n\t" //branch to RAM code
 		:
 		: "r" (ramCodeStart));
-	//set up ram stack exception frame, switch to RAM stack
-	//go to RAM CODE
 	return 1;
 }
 
 int Service_Call_43(void)
 {
-	//after the execution of RAM code
-	// switch out of ram stack
-	//back onto normal stack
-	//return???
 	asm(
 		"MSR MSP, %0\n\t"
 		:
-		: "r" (mainStack));
+		: "r" (mainStack)); //switch back to main stack
 	asm(
-		"POP {LR}\n\t"
-		"BX lr\n\t"
+		"POP {LR}\n\t" //pop the LR (the exception return LR) off the stack
+		"BX lr\n\t" //perform exception return back into the normal code
 	);
 	return 1;
 }
@@ -309,7 +269,7 @@ int remoteInit(void)
 	int sizeOfFile = 3092;
 	while (1)
 	{
-		ret = recieve((uint8_t*) RAM_CODE_START , sizeOfFile, 400, UART4);
+		ret = recieve((uint8_t*) RAM_CODE_START , sizeOfFile, 400, UART4); //recieve the RAM code from PC
 		if (ret == 0)
 		{
 			break;
@@ -322,7 +282,7 @@ int remoteInit(void)
 	}
 
 	asm(
-		"svc #42"); //call to Ram set up stack method;
+		"svc #42"); //triggers exception and calls Service_Call_42 (Calls RAM code)
 
 
 }
