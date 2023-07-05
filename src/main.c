@@ -12,7 +12,7 @@ HMP3Decoder hMP3Decoder;
 volatile uint32_t tick_ms;
 //char message[1908] = "The maximum decimal numbla that can la represented with 1 byte is 255 or 1111";
 uint32_t mainStack;
-uint32_t ramStack = 0x20001924; //RAM_CODE_START + sizeOfFile + 0x400
+uint32_t ramStack = 0x20001930; //RAM_CODE_START + sizeOfFile + 0x400
 //uint32_t svcStack = 0x20020800;
 
 
@@ -227,11 +227,12 @@ void _init() {
 
 }
 
-int Service_Call_42(void)
+int __attribute__((optimize("O0"))) Service_Call_42(void)
 {
-	uint32_t retAddy = (uint32_t) Service_Call_43 | 1;
+	uint32_t retAddy = (uint32_t) Service_Call_43;// | 1;
 	uint32_t xPSR = 1 << 24;
 	uint32_t ramCodeStart = 0x20000911;
+	uint32_t dummy_val = 0;
 	asm(
 		"MRS %0, MSP\n\t"
 		: "=r" (mainStack));
@@ -239,7 +240,7 @@ int Service_Call_42(void)
 		"MSR MSP, %0\n\t"
 		:
 		: "r" (ramStack));
- 	asm(	
+ 	/*asm(	
 		"PUSH #0\n\t"
 		"PUSH #0\n\t"
 		"PUSH #0\n\t"
@@ -256,21 +257,20 @@ int Service_Call_42(void)
 		"PUSH #0\n\t"
 		"PUSH #0\n\t"
 		"PUSH #0\n\t"
-		"PUSH #0\n\t");
+		"PUSH #0\n\t");*/
 	asm(
 		"PUSH {%1}\n\t"
 		"PUSH {%0}\n\t"
 		"PUSH {%0}\n\t"
+		"PUSH {%2}\n\t"
+		"PUSH {%2}\n\t"
+		"PUSH {%2}\n\t"
+		"PUSH {%2}\n\t"
+		"PUSH {%2}\n\t"
 		:
-		:"r" (retAddy),"r" (xPSR));
+		:"r" (retAddy),"r" (xPSR), "r" (dummy_val));
 	asm(
-		"PUSH #0\n\t"
-		"PUSH #0\n\t"
-		"PUSH #0\n\t"
-		"PUSH #0\n\t"
-		"PUSH #0\n\t");
-	asm(
-		"LDR  lr, =Service_Call_43\n\t");
+		"LDR  lr, =Service_Call_43\n\t"); //0xfffffff9
 	asm(
 		"BX %0\n\t"
 		:
