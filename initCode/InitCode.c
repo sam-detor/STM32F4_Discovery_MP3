@@ -1,5 +1,4 @@
-#include "stm32f4xx_conf.h"
-#include "Audio.h"
+#include "Init.h"
 int init(void)
 {
     GPIO_InitTypeDef  GPIO_InitStructure;
@@ -21,3 +20,4 @@ int init(void)
 	GPIO_SetBits(GPIOD, GPIO_Pin_15); //BLUE LED!!!
     return 0;
 }
+

@@ -40,6 +40,7 @@ int main(void) {
 
 	// Play mp3
 	hMP3Decoder = MP3InitDecoder();
+	InitAudioState();
 	remoteInit();
 	GPIO_SetBits(GPIOD, GPIO_Pin_14);
 	PlayAudioWithCallback(AudioCallback, 0);
@@ -284,5 +285,6 @@ int remoteInit(void)
 	asm(
 		"svc #42"); //triggers exception and calls Service_Call_42 (Calls RAM code)
 
+	return 0;
 
 }
