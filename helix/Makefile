@@ -37,7 +37,7 @@ SRCS += stproc.c subband.c trigtabs_fixpt.c
 
 OBJS = $(SRCS:.c=.o)
 
-.PHONY: libhelix.a
+.PHONY: libheSVClix.a
 
 all: libhelix.a
 

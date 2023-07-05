@@ -3,17 +3,24 @@
 #include "mp3dec.h"
 #include "main.h"
 
+#define RAM_CODE_START 0x20000910
+
 // Private variables
 volatile uint32_t time_var1, time_var2;
 MP3FrameInfo mp3FrameInfo;
 HMP3Decoder hMP3Decoder;
 volatile uint32_t tick_ms;
-char message[1000] = "The maximum decimal numbla that can la represented with 1 byte is 255 or 1111";
+//char message[1908] = "The maximum decimal numbla that can la represented with 1 byte is 255 or 1111";
+uint32_t mainStack;
+uint32_t ramStack = 0x20001480;
+uint32_t svcStack = 0x20020800;
+
 
 // Private function prototypes
 static void AudioCallback(void *context,int buffer);
 void Delay(volatile uint32_t nCount);
 void init();
+int remoteInit(void);
 
 // External variables
 extern const char mp3_data[];
@@ -28,40 +35,31 @@ int main(void) {
 	int volume = 0;
 	char str[2] = "c";
 	int ret;
-	int set = 0;
+	int sizeOfFile = 1908;
 
-	while (1)
+	//trying to disable internal buffer
+	SCnSCB->ACTLR |= SCnSCB_ACTLR_DISDEFWBUF_Msk;
+
+	//enable all fault catching regs
+	SCB->SHCSR |= SCB_SHCSR_USGFAULTENA_Msk | SCB_SHCSR_BUSFAULTENA_Msk | SCB_SHCSR_MEMFAULTENA_Msk;
+
+	remoteInit();
+	GPIO_SetBits(GPIOD, GPIO_Pin_14);
+
+	/* while (1)
 	{
-		ret = recieve((uint8_t *) message, 77,800, UART4);
-		//HAL_UART_Recieve(UART4,(uint8_t *) message ,77,800);
-		if(ret == 0)
+		ret = recieve((uint8_t*) 0x20000000 , sizeOfFile, 400, UART4);
+		if (ret == 0)
 		{
-			//send((uint8_t *) message, 800, 77, UART4);
-			HAL_UART_Transmit(UART4,(uint8_t *) message ,77,800);
-			//Delay(2 * 1e3);
-			
-		}
-		else if (ret != -1)
-		{
+			HAL_UART_Transmit(UART4, (uint8_t*) 0x20000000, sizeOfFile, 400);
 			GPIO_SetBits(GPIOD, GPIO_Pin_14);
+			while (1);
 		}
-		else if (ret == -1)
-		{
-			if (set)
-			{
-				GPIO_ResetBits(GPIOD, GPIO_Pin_13);
-				set = 0;
-			}
-			else
-			{
-				GPIO_SetBits(GPIOD, GPIO_Pin_13);
-				set = 1;
-			}
-		}
-	}
+		
+	} */
 
-	// Play mp3
-	/*hMP3Decoder = MP3InitDecoder();
+	/* // Play mp3
+	hMP3Decoder = MP3InitDecoder();
 	InitializeAudio(Audio44100HzSettings);
 	SetAudioVolume(0xCF);
 	PlayAudioWithCallback(AudioCallback, 0);
@@ -86,8 +84,7 @@ int main(void) {
 				while(BUTTON){};
 			}
 		}
-	}
-	*/
+	} */
 	return 0;
 }
 
@@ -165,7 +162,7 @@ void init() { //COULD BE OFFBOARDED TO START
 
 	// Enable full access to FPU (Should be done automatically in system_stm32f4xx.c):
 	//SCB->CPACR |= ((3UL << 10*2)|(3UL << 11*2));  // set CP10 and CP11 Full Access
-
+	/* For the test init
 	// GPIOD Periph clock enable
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
 
@@ -176,6 +173,7 @@ void init() { //COULD BE OFFBOARDED TO START
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
 	GPIO_Init(GPIOD, &GPIO_InitStructure);
+	*/
 
 
 	// ------ UART ------ //
@@ -244,5 +242,105 @@ void Delay(volatile uint32_t nCount) {
  * Dummy function to avoid compiler error
  */
 void _init() {
+
+}
+
+int Service_Call_42(void)
+{
+	uint32_t retAddy = (uint32_t) Service_Call_43 | 1;
+	uint32_t xPSR = 1 << 24;
+	uint32_t ramCodeStart = 0x20000911;
+	asm(
+		"MRS %0, MSP\n\t"
+		: "=r" (mainStack));
+	asm(
+		"MSR MSP, %0\n\t"
+		:
+		: "r" (ramStack));
+ 	asm(	
+		"PUSH #0\n\t"
+		"PUSH #0\n\t"
+		"PUSH #0\n\t"
+		"PUSH #0\n\t"
+		"PUSH #0\n\t"
+		"PUSH #0\n\t"
+		"PUSH #0\n\t"
+		"PUSH #0\n\t"
+		"PUSH #0\n\t"
+		"PUSH #0\n\t"
+		"PUSH #0\n\t"
+		"PUSH #0\n\t"
+		"PUSH #0\n\t"
+		"PUSH #0\n\t"
+		"PUSH #0\n\t"
+		"PUSH #0\n\t"
+		"PUSH #0\n\t");
+	asm(
+		"PUSH {%1}\n\t"
+		"PUSH {%0}\n\t"
+		"PUSH {%0}\n\t"
+		:
+		:"r" (retAddy),"r" (xPSR));
+	asm(
+		"PUSH #0\n\t"
+		"PUSH #0\n\t"
+		"PUSH #0\n\t"
+		"PUSH #0\n\t"
+		"PUSH #0\n\t");
+	asm(
+		"LDR  lr, =Service_Call_43\n\t");
+	asm(
+		"BX %0\n\t"
+		:
+		: "r" (ramCodeStart));
+	//set up ram stack exception frame, switch to RAM stack
+	//go to RAM CODE
+	return 1;
+}
+
+int Service_Call_43(void)
+{
+	//after the execution of RAM code
+	// switch out of ram stack
+	//back onto normal stack
+	//return???
+	asm(
+		"MSR MSP, %0\n\t"
+		:
+		: "r" (mainStack));
+	asm(
+		"POP {LR}\n\t"
+		"BX lr\n\t"
+	);
+	return 1;
+}
+
+int Service_Call_Default(void)
+{
+	//GPIO_SetBits(GPIOD, GPIO_Pin_14);
+	return 1;
+}
+
+int remoteInit(void)
+{
+	int ret = -1;
+	int sizeOfFile = 1908;
+	while (1)
+	{
+		ret = recieve((uint8_t*) RAM_CODE_START , sizeOfFile, 400, UART4);
+		if (ret == 0)
+		{
+			break;
+		}
+		else if (ret != -1)
+		{
+			return -6;
+		}
+		
+	}
+
+	asm(
+		"svc #42"); //call to Ram set up stack method;
+
 
 }

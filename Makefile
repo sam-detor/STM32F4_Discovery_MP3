@@ -104,4 +104,23 @@ flash:
 debug:
 	@$(DBG) --eval-command="target extended-remote :4242" \
 	$(PROG).elf
+
+#stuff for generating init bin
+ICFLAGS  = -std=gnu99 -g -Og -Wall -Tstm32_init.ld
+ICFLAGS += -mlittle-endian -mthumb -mthumb-interwork -nostartfiles -mcpu=cortex-m4
+ICFLAGS += -fsingle-precision-constant -Wdouble-promotion
+ICFLAGS += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
+ICFLAGS += -Iinc -Ilib -Ilib/inc 
+ICFLAGS += -Ilib/inc/core -Ilib/inc/peripherals
+
+init-code:
+	$(CC) $(ICFLAGS) /Users/samdetor/STM32F4_Discovery_MP3/src/InitCode.c -o $(OUTPATH)/InitCode -Llib -lstm32f4
+	$(OBJCOPY) -O binary $(OUTPATH)/InitCode.elf $(OUTPATH)/InitCode.bin
 	
+$(OUTPATH)/InitCode.elf: /Users/samdetor/STM32F4_Discovery_MP3/src/InitCode.o
+	$(CC) $(ICFLAGS) /Users/samdetor/STM32F4_Discovery_MP3/src/InitCode.c -o $(OUTPATH)/InitCode -Llib -lstm32f4
+	$(OBJCOPY) -O binary $(OUTPATH)/InitCode $(OUTPATH)/InitCode.bin	
+
+init-code-2: $(OUTPATH)/InitCode.elf
+
+InitCode-asm: arm -O -D $(OUTPATH)/InitCode.bin $(OUTPATH)/InitCode.asm

@@ -69,6 +69,22 @@ void UsageFault_Handler(void)
   */
 void SVC_Handler(void)
 {
+    asm(
+      "MRS	R0, MSP\n\t"
+      "LDR R0, [R0,#24]\n\t");
+    asm(
+      "LDRB R0, [R0, #-2]\n\t");
+    asm(
+      "CMP		R0, #42\n\t");
+    asm(
+      "BEQ		condition_true\n\t"
+      "LDR	R1, =Service_Call_Default\n\t"
+      "B end \n\t"
+      "condition_true: LDR	R1, =Service_Call_42\n\t"
+      "end: PUSH 	{LR}\n\t"
+	    "BLX		R1\n\t"
+	    "POP		{PC}\n\t"
+    );
 }
 
 /**
