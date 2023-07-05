@@ -227,7 +227,7 @@ void _init() {
 
 }
 
-int __attribute__((optimize("O0"))) Service_Call_42(void)
+int Service_Call_42(void)
 {
 	uint32_t retAddy = (uint32_t) Service_Call_43;// | 1;
 	uint32_t xPSR = 1 << 24;
@@ -240,7 +240,7 @@ int __attribute__((optimize("O0"))) Service_Call_42(void)
 		"MSR MSP, %0\n\t"
 		:
 		: "r" (ramStack));
- 	/*asm(	
+ 	asm(	
 		"PUSH #0\n\t"
 		"PUSH #0\n\t"
 		"PUSH #0\n\t"
@@ -257,7 +257,7 @@ int __attribute__((optimize("O0"))) Service_Call_42(void)
 		"PUSH #0\n\t"
 		"PUSH #0\n\t"
 		"PUSH #0\n\t"
-		"PUSH #0\n\t");*/
+		"PUSH #0\n\t");
 	asm(
 		"PUSH {%1}\n\t"
 		"PUSH {%0}\n\t"
@@ -270,7 +270,7 @@ int __attribute__((optimize("O0"))) Service_Call_42(void)
 		:
 		:"r" (retAddy),"r" (xPSR), "r" (dummy_val));
 	asm(
-		"LDR  lr, =Service_Call_43\n\t"); //0xfffffff9
+		"LDR  lr, =0xfffffff9\n\t"); //0xfffffff9
 	asm(
 		"BX %0\n\t"
 		:
