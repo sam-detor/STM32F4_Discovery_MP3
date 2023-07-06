@@ -33,10 +33,10 @@ int main(void) {
 	int volume = 0;
 
 	//trying to disable internal buffer
-	SCnSCB->ACTLR |= SCnSCB_ACTLR_DISDEFWBUF_Msk;
+	//SCnSCB->ACTLR |= SCnSCB_ACTLR_DISDEFWBUF_Msk;
 
 	//enable all fault catching regs
-	SCB->SHCSR |= SCB_SHCSR_USGFAULTENA_Msk | SCB_SHCSR_BUSFAULTENA_Msk | SCB_SHCSR_MEMFAULTENA_Msk;
+	//SCB->SHCSR |= SCB_SHCSR_USGFAULTENA_Msk | SCB_SHCSR_BUSFAULTENA_Msk | SCB_SHCSR_MEMFAULTENA_Msk;
 
 	// Play mp3
 	hMP3Decoder = MP3InitDecoder();
