@@ -8,7 +8,7 @@ volatile uint32_t time_var1, time_var2;
 MP3FrameInfo mp3FrameInfo;
 HMP3Decoder hMP3Decoder;
 volatile uint32_t tick_ms;
-char message[1000] = "The maximum decimal numbla that can la represented with 1 byte is 255 or 1111";
+//char message[1000] = "The maximum decimal numbla that can la represented with 1 byte is 255 or 1111";
 
 // Private function prototypes
 static void AudioCallback(void *context,int buffer);
@@ -26,42 +26,22 @@ int main(void) {
 	
 	init();
 	int volume = 0;
-	char str[2] = "c";
 	int ret;
-	int set = 0;
 
 	while (1)
 	{
-		ret = recieve((uint8_t *) message, 77,800, UART4);
+		ret = recieve((uint8_t *) 0x20000910, 77,800, UART4);
 		//HAL_UART_Recieve(UART4,(uint8_t *) message ,77,800);
 		if(ret == 0)
 		{
-			//send((uint8_t *) message, 800, 77, UART4);
-			HAL_UART_Transmit(UART4,(uint8_t *) message ,77,800);
-			//Delay(2 * 1e3);
-			
-		}
-		else if (ret != -1)
-		{
 			GPIO_SetBits(GPIOD, GPIO_Pin_14);
-		}
-		else if (ret == -1)
-		{
-			if (set)
-			{
-				GPIO_ResetBits(GPIOD, GPIO_Pin_13);
-				set = 0;
-			}
-			else
-			{
-				GPIO_SetBits(GPIOD, GPIO_Pin_13);
-				set = 1;
-			}
+			break;
+			
 		}
 	}
 
-	// Play mp3
-	/*hMP3Decoder = MP3InitDecoder();
+	//Play mp3
+	hMP3Decoder = MP3InitDecoder();
 	InitializeAudio(Audio44100HzSettings);
 	SetAudioVolume(0xCF);
 	PlayAudioWithCallback(AudioCallback, 0);
@@ -87,7 +67,6 @@ int main(void) {
 			}
 		}
 	}
-	*/
 	return 0;
 }
 
