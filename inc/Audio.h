@@ -16,6 +16,7 @@ typedef void AudioCallbackFunction(void *context,int buffer);
 #define AudioVGAHSyncSettings 419,2,13,0 // 31475.3606. Actual VGA timer is 31472.4616.
 
 // Initialize audio state (stuff that can't be offboarded)
+//void InitAudioState();
 void InitAudioState();
 
 // Power up and down the audio hardware.

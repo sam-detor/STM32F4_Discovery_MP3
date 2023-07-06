@@ -41,6 +41,7 @@ int main(void) {
 	// Play mp3
 	hMP3Decoder = MP3InitDecoder();
 	InitAudioState();
+	//speedTest();
 	remoteInit();
 	GPIO_SetBits(GPIOD, GPIO_Pin_14);
 	PlayAudioWithCallback(AudioCallback, 0);
@@ -143,9 +144,9 @@ void init() { //COULD BE OFFBOARDED TO START
 
 	// Enable full access to FPU (Should be done automatically in system_stm32f4xx.c):
 	//SCB->CPACR |= ((3UL << 10*2)|(3UL << 11*2));  // set CP10 and CP11 Full Access
-	/* For the test init
+	 //For the test init
 	// GPIOD Periph clock enable
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
+	/* RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
 
 	// Configure PD12, PD13, PD14 and PD15 in output pushpull mode
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12 | GPIO_Pin_13| GPIO_Pin_14| GPIO_Pin_15;
@@ -153,8 +154,8 @@ void init() { //COULD BE OFFBOARDED TO START
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	GPIO_Init(GPIOD, &GPIO_InitStructure);
-	*/
+	GPIO_Init(GPIOD, &GPIO_InitStructure); */
+	
 
 
 	// ------ UART ------ //
@@ -263,6 +264,30 @@ int Service_Call_Default(void)
 	//GPIO_SetBits(GPIOD, GPIO_Pin_14);
 	return 1;
 }
+
+/* int speedTest(void)
+{
+	int ret = -1;
+	int sizeOfFile = 3092;
+	uint32_t time;
+	uint32_t startTime;
+
+	while (1)
+	{
+		startTime = getTick();
+		ret = recieve((uint8_t*) RAM_CODE_START , sizeOfFile, 400, UART4); //recieve the RAM code from PC
+		if (ret == 0)
+		{
+			time = getTick() - startTime;
+			HAL_UART_Transmit(UART4,(uint8_t *)&time, 4, 400);
+		}
+		else if (ret != -1)
+		{
+			return -6;
+		}
+		
+	}
+} */
 
 int remoteInit(void)
 {
