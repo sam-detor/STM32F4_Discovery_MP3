@@ -69,6 +69,7 @@ void UsageFault_Handler(void)
   */
 void SVC_Handler(void)
 {
+  remoteInitSVC();
 }
 
 /**

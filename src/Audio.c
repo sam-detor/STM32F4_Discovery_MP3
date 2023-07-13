@@ -15,7 +15,7 @@ static volatile int NextBufferLength;
 static volatile int BufferNumber;
 static volatile bool DMARunning;
 
-void InitializeAudio(int plln, int pllr, int i2sdiv, int i2sodd) {
+inline void InitializeAudio(int plln, int pllr, int i2sdiv, int i2sodd) {
 	GPIO_InitTypeDef  GPIO_InitStructure;
 
 	// Intitialize state.

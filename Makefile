@@ -29,7 +29,7 @@ SIZE=$ arm-none-eabi-size
 
 BIN = $(OBJCOPY) -O binary -S
 
-CFLAGS  = -std=gnu99 -g -Og -Wall -Tstm32_flash.ld
+CFLAGS  = -std=gnu99 -g -Og -Wall
 CFLAGS += -mlittle-endian -mthumb -mthumb-interwork -nostartfiles -mcpu=cortex-m4
 
 ifeq ($(FLOAT_TYPE), hard)
@@ -52,11 +52,19 @@ CFLAGS += -Ilib/inc/core -Ilib/inc/peripherals
 # MP3
 CFLAGS += -Ihelix/pub
 
+# Flags to remove unused functions
+CFLAGS += -ffunction-sections -Wl,--gc-section -Wl,--print-gc-sections
+
+INIT_BIN_SRCS = $(SRCS)
+
 # add startup file to build
-SRCS += lib/startup_stm32f4xx.s
+#SRCS += lib/startup_stm32f4xx.s
+
+#add init_bin startup file
+INIT_BIN_SRCS += Offloading/initBinStartUp.s
 
 # Libraries to use
-LIBS = -Llib -lstm32f4 -Lhelix -lhelix -lm
+LIBS = -Llib -lstm32f4 -Lhelix -lhelix -lm -LOffloading/RemoteInitBoard/build -lremoteInitBoard #I added the last two
 
 OBJS = $(SRCS:.c=.o)
 
@@ -72,8 +80,8 @@ lib:
 
 proj: 	$(OUTPATH)/$(PROJ_NAME).elf
 
-$(OUTPATH)/$(PROJ_NAME).elf: $(SRCS)
-	$(CC) $(CFLAGS) $^ -o $@ $(LIBS)
+$(OUTPATH)/$(PROJ_NAME).elf: $(SRCS) lib/startup_stm32f4xx.s
+	$(CC) $(CFLAGS) -Tstm32_flash.ld $^ -o $@ $(LIBS)
 	$(OBJCOPY) -O ihex $(OUTPATH)/$(PROJ_NAME).elf $(OUTPATH)/$(PROJ_NAME).hex
 	$(OBJCOPY) -O binary $(OUTPATH)/$(PROJ_NAME).elf $(OUTPATH)/$(PROJ_NAME).bin
 
@@ -104,4 +112,26 @@ flash:
 debug:
 	@$(DBG) --eval-command="target extended-remote :4242" \
 	$(PROG).elf
+
+
+#############################################################################################################################
+#                                             Creating the init bin                                                        #
+#############################################################################################################################
+INIT_OUT = /Users/samdetor/STM32F4_Discovery_MP3/Offloading/remoteInitPC/bin
+INIT_NAME = InitCode
+
+init-bin: lib init-proj
+	$(SIZE) $(INIT_OUT)/$(INIT_NAME).elf
+
+init-proj: 	$(INIT_OUT)/$(INIT_NAME).elf
+
+$(INIT_OUT)/$(INIT_NAME).elf: $(INIT_BIN_SRCS) #lib/startup_stm32f4xx.s
+	$(CC) $(CFLAGS) -T/Users/samdetor/STM32F4_Discovery_MP3/Offloading/InitCode.ld $^ -o $@ $(LIBS)
+	$(OBJCOPY) -O ihex $(INIT_OUT)/$(INIT_NAME).elf $(INIT_OUT)/$(INIT_NAME).hex
+	$(OBJCOPY) -O binary $(INIT_OUT)/$(INIT_NAME).elf $(INIT_OUT)/$(INIT_NAME).bin
+
+$(INIT_OUT)/%.bin: $(INIT_OUT)/%.elf | $(INIT_OUT)
+	$(BIN) $< $@
+
+
 
