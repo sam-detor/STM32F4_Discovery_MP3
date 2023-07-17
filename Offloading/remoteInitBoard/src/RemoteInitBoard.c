@@ -1,7 +1,8 @@
 #include "RemoteInitBoard.h"
 
+
 //Global Vars
-uint32_t ramStack = RAM_CODE_START + INIT_BIN_SIZE + RAM_STACK_SIZE; //RAM_CODE_START + sizeOfFile + 0x400 + whatever it takes to be double word aligned (just in case)
+uint32_t ramStack;// = RAM_CODE_START + INIT_BIN_SIZE + RAM_STACK_SIZE; //RAM_CODE_START + sizeOfFile + 0x400 + whatever it takes to be double word aligned (just in case)
 uint32_t mainStack;
 volatile uint32_t* tick_ms;
 
@@ -11,8 +12,8 @@ int doubleWordAlignStack(uint32_t * stack);
 int remoteInit(USART_TypeDef* USARTx, volatile uint32_t* systick_ms)
 {
 	int ret;
-	//making sure the RAM stack is double word aligned
-	doubleWordAlignStack(&ramStack);
+	size_t bytesRecieved;
+
 	//setting the address of the systik var
 	tick_ms = systick_ms;
 
@@ -23,16 +24,24 @@ int remoteInit(USART_TypeDef* USARTx, volatile uint32_t* systick_ms)
 		return -6;
 	}
 
+	size_t RAMSpace = RAM_SIZE - (RAM_START - ((uint32_t) &_ebss)) - (RAM_STACK_SIZE * 2); //calculates how much space there is in RAM for the code
+
 	while (1)
 	{
-		ret = recieve((uint8_t*) RAM_CODE_START, INIT_BIN_SIZE, COMMS_TIMEOUT, USARTx); //recieve the RAM code from PC
+		ret = recieve((uint8_t*) &_ebss, RAMSpace, COMMS_TIMEOUT, USARTx, &bytesRecieved); //recieve the RAM code from PC
 		if (ret == 0)
 		{
+			//setting the ramStack value
+			ramStack = ((uint32_t) &_ebss) + bytesRecieved + RAM_STACK_SIZE;
+			
+			//making sure the RAM stack is double word aligned
+			doubleWordAlignStack(&ramStack);
+
 			break;
 		}
 		else if (ret != -1)
 		{
-			return -6;
+			return ret;
 		}
 		
 	}
@@ -59,7 +68,7 @@ int doubleWordAlignStack(uint32_t * stack)
 
 int Service_Call_42(void)
 {
-	uint32_t ramCodeStart = RAM_CODE_START + 1;
+	uint32_t ramCodeStart = ((uint32_t) &_ebss) + 1;
 	asm(
 		"MRS %0, MSP\n\t"
 		: "=r" (mainStack)); //save main stakc

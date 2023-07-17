@@ -12,18 +12,18 @@ ENTRY(Reset_Handler)
 MEMORY
 {
   FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 1024K
-  RAM (rwx)       : ORIGIN = 0x20000910, LENGTH = 128K
+  RAM (rwx)       : ORIGIN = 0x20009da4, LENGTH = 10000K /*128K*/
   CCM (rwx)       : ORIGIN = 0x10000000, LENGTH = 64K
 }
 
 /* Define output sections */
 SECTIONS
 {
-  /* The program code and other data goes into RAM */
- 
+    /* The program code and other data goes into RAM */
   .text :
   {
     . = ALIGN(4);
+    _etext_start = .;
     *(.text*)
     *(.text)           /* .text sections (code) */
                        /* .text* sections (code) */

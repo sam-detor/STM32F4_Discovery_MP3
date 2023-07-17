@@ -53,7 +53,7 @@ CFLAGS += -Ilib/inc/core -Ilib/inc/peripherals
 CFLAGS += -Ihelix/pub
 
 # Flags to remove unused functions
-CFLAGS += -ffunction-sections -Wl,--gc-section -Wl,--print-gc-sections
+CFLAGS += -ffunction-sections -Wl,--gc-section #-Wl,--print-gc-sections
 
 INIT_BIN_SRCS = $(SRCS)
 
@@ -77,6 +77,7 @@ all: lib proj
 lib:
 	$(MAKE) -C lib FLOAT_TYPE=$(FLOAT_TYPE)
 	$(MAKE) -C helix FLOAT_TYPE=$(FLOAT_TYPE)
+	$(MAKE) -C Offloading/remoteInitBoard FLOAT_TYPE=$(FLOAT_TYPE)
 
 proj: 	$(OUTPATH)/$(PROJ_NAME).elf
 
@@ -95,6 +96,8 @@ clean:
 	rm -f $(OUTPATH)/$(PROJ_NAME).bin
 	$(MAKE) clean -C lib
 	$(MAKE) clean -C helix
+	$(MAKE) clean -C Offloading/remoteInitBoard
+
 
 OPENOCD				?= openocd
 OPENOCD_INTERFACE	?= interface/stlink-v2-1.cfg
@@ -132,6 +135,12 @@ $(INIT_OUT)/$(INIT_NAME).elf: $(INIT_BIN_SRCS) #lib/startup_stm32f4xx.s
 
 $(INIT_OUT)/%.bin: $(INIT_OUT)/%.elf | $(INIT_OUT)
 	$(BIN) $< $@
+
+init-clean:
+	rm -f $(INIT_OUT)/*.bin
+	rm -f $(INIT_OUT)/*.elf
+	rm -f $(INIT_OUT)/*.hex
+	rm -f $(INIT_OUT)/*.asm
 
 
 

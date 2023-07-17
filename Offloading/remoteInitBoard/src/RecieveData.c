@@ -7,7 +7,7 @@ typedef enum receiveCase {
 
 //Function declarations
 int respond(CommsPacket* packetToSend, ReceiveCase *state, int* timesTried, USART_TypeDef* USARTx);
-int processPacket(uint8_t *packet, uint8_t *dataBuff, size_t size, size_t* placeholder, CommsPacket *packetToSend, uint8_t* started, uint8_t* corruptData);
+int processPacket(uint8_t *packet, uint8_t *dataBuff, size_t size, size_t* placeholder, CommsPacket *packetToSend, uint8_t* started, uint8_t* corruptData, size_t* bytesRecieved);
 
 //Function Bodies
 /**
@@ -19,7 +19,7 @@ int processPacket(uint8_t *packet, uint8_t *dataBuff, size_t size, size_t* place
  * @param USARTx a UART_TypeDef correctly initialized  
  * @return 0 on pass and other on fail (see error code map for specific details)
  */
-int recieve(uint8_t * data, size_t size, size_t timeout_ms, USART_TypeDef* USARTx)
+int recieve(uint8_t * data, size_t size, size_t timeout_ms, USART_TypeDef* USARTx, size_t* bytesRecieved)
 {
     //Variable defs
     CommsPacket packetToSend;
@@ -30,6 +30,9 @@ int recieve(uint8_t * data, size_t size, size_t timeout_ms, USART_TypeDef* USART
     size_t myPlaceholder = 0;
     uint8_t started = 0;
     uint8_t corruptData = 0;
+
+    //zeroing bytes recieved
+    *bytesRecieved = 0;
     
     //Repeat this cycle until one of the helper methods signals to stop
     while(1)
@@ -53,7 +56,7 @@ int recieve(uint8_t * data, size_t size, size_t timeout_ms, USART_TypeDef* USART
             break;
 
             case PROCESS_PACKET: //checks for data corruption, copies good data into the data buff, and chooses response packet 
-                ret = processPacket(buffer, data, size, &myPlaceholder, &packetToSend, &started, &corruptData);
+                ret = processPacket(buffer, data, size, &myPlaceholder, &packetToSend, &started, &corruptData, bytesRecieved);
                 if (ret < 0)
                 {
                     return ret; //no room left in the data buff for storage or recieved to many "bad packet" warnings from sender
@@ -139,7 +142,7 @@ int recievePacket(uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms, USART_Type
  * @param corruptData a pointer to a variable indicating if the reciever has previously recieved a "bad packet" response from sender 
  * @return 0 on normal packet, 1 on end packet, and other on fail (see error code map for specific details)
  */
-int processPacket(uint8_t *packet, uint8_t *dataBuff, size_t size, size_t* placeholder, CommsPacket *packetToSend, uint8_t* started, uint8_t* corruptData)
+int processPacket(uint8_t *packet, uint8_t *dataBuff, size_t size, size_t* placeholder, CommsPacket *packetToSend, uint8_t* started, uint8_t* corruptData, size_t* bytesRecieved)
 {
     //variable defs
     int ret;
@@ -201,6 +204,7 @@ int processPacket(uint8_t *packet, uint8_t *dataBuff, size_t size, size_t* place
     for(i = 0; i < header->length; i++)
     {
         dataBuff[*placeholder + i] = packet[PREAMBLE_SIZE + i];
+        *bytesRecieved += 1;
     }
 
     *placeholder += (size_t) header->length;

@@ -11,6 +11,9 @@
  * @param  None
  * @retval : None
 */
+.word  _edata
+/* end address for the .bss section. defined in linker script */
+.word  _ebss
 
     .section  .text.Reset_Handler
   .weak  Reset_Handler
