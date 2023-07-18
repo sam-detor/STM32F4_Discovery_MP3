@@ -26,7 +26,6 @@ int main(void) {
 	
 	init();
 	int volume = 0;
-	int ret;
 
 	//Play mp3
 	hMP3Decoder = MP3InitDecoder();
@@ -145,7 +144,7 @@ void init() { //COULD BE OFFBOARDED TO START
 	GPIO_Init(GPIOD, &GPIO_InitStructure);
 
 
-	// ------ UART ------ //
+		// ------ UART ------ //
 
 	// Clock
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE);
