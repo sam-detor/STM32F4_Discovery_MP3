@@ -27,6 +27,7 @@ extern const char mp3_data[];
 int main(void) {
 	init();
 	int volume = 0;
+	int set = 0;
 
 	// Play mp3
 	hMP3Decoder = MP3InitDecoder();
@@ -56,6 +57,18 @@ int main(void) {
 				while(BUTTON){};
 			}
 		}
+		USART_SendData(UART4,'c');
+		if (!set)
+		{
+			GPIO_SetBits(GPIOD, GPIO_Pin_15);
+			set = 1;
+		}
+		else
+		{
+			GPIO_ResetBits(GPIOD, GPIO_Pin_15);
+			set = 0;
+		}
+		Delay(1000);
 	}
 
 	return 0;
@@ -148,22 +161,22 @@ void init() {
 	GPIO_Init(GPIOD, &GPIO_InitStructure);
 
 
-	// ------ UART ------ //
+		// ------ UART ------ //
 
 	// Clock
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
 
 	// IO
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_6;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-	GPIO_Init(GPIOD, &GPIO_InitStructure);
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
 
-	GPIO_PinAFConfig(GPIOD, GPIO_PinSource5, GPIO_AF_USART1);
-	GPIO_PinAFConfig(GPIOD, GPIO_PinSource6, GPIO_AF_USART1);
+	GPIO_PinAFConfig(GPIOC, GPIO_PinSource10, GPIO_AF_UART4);
+	GPIO_PinAFConfig(GPIOC, GPIO_PinSource11, GPIO_AF_UART4);
 
 	// Conf
 	USART_InitStructure.USART_BaudRate = 115200;
@@ -172,10 +185,10 @@ void init() {
 	USART_InitStructure.USART_Parity = USART_Parity_No;
 	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
 	USART_InitStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
-	USART_Init(USART2, &USART_InitStructure);
+	USART_Init(UART4, &USART_InitStructure);
 
 	// Enable
-	USART_Cmd(USART2, ENABLE);
+	USART_Cmd(UART4, ENABLE);
 }
 
 /*
