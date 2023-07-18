@@ -28,18 +28,6 @@ int main(void) {
 	int volume = 0;
 	int ret;
 
-	while (1)
-	{
-		ret = recieve((uint8_t *) 0x20000910, 77,800, UART4);
-		//HAL_UART_Recieve(UART4,(uint8_t *) message ,77,800);
-		if(ret == 0)
-		{
-			GPIO_SetBits(GPIOD, GPIO_Pin_14);
-			break;
-			
-		}
-	}
-
 	//Play mp3
 	hMP3Decoder = MP3InitDecoder();
 	InitializeAudio(Audio44100HzSettings);
