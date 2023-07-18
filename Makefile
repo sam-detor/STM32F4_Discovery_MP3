@@ -104,4 +104,3 @@ flash:
 debug:
 	@$(DBG) --eval-command="target extended-remote :4242" \
 	$(PROG).elf
-

@@ -89,9 +89,9 @@
   */           
 
 #if !defined  (HSE_VALUE) 
-  #define HSE_VALUE  ((uint32_t)8000000) /*!< Value of the External oscillator in Hz */
-#endif /* HSE_VALUE */
-
+  #define HSE_VALUE   ((uint32_t)8000000)  /*!< Value of the External oscillator in Hz */ 
+#endif /* HSE_VALUE */ //((uint32_t)25000000)
+  
 /**
  * @brief In the following line adjust the External High Speed oscillator (HSE) Startup 
    Timeout value 

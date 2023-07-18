@@ -1,16 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <math.h>
-#include "stm32f4xx_conf.h"
 #include "utils.h"
 #include "Audio.h"
 #include "mp3dec.h"
+#include "main.h"
 
 // Private variables
 volatile uint32_t time_var1, time_var2;
 MP3FrameInfo mp3FrameInfo;
 HMP3Decoder hMP3Decoder;
+volatile uint32_t tick_ms;
+//char message[1000] = "The maximum decimal numbla that can la represented with 1 byte is 255 or 1111";
 
 // Private function prototypes
 static void AudioCallback(void *context,int buffer);
@@ -25,20 +23,18 @@ extern const char mp3_data[];
 #define BUTTON		(GPIOA->IDR & GPIO_Pin_0)
 
 int main(void) {
+	
 	init();
 	int volume = 0;
-	int set = 0;
 
-	// Play mp3
+	//Play mp3
 	hMP3Decoder = MP3InitDecoder();
 	InitializeAudio(Audio44100HzSettings);
 	SetAudioVolume(0xCF);
 	PlayAudioWithCallback(AudioCallback, 0);
 
 	for(;;) {
-		/*
-		 * Check if user button is pressed
-		 */
+		 //Check if user button is pressed
 		if (BUTTON) {
 			// Debounce
 			Delay(10);
@@ -57,20 +53,7 @@ int main(void) {
 				while(BUTTON){};
 			}
 		}
-		USART_SendData(UART4,'c');
-		if (!set)
-		{
-			GPIO_SetBits(GPIOD, GPIO_Pin_15);
-			set = 1;
-		}
-		else
-		{
-			GPIO_ResetBits(GPIOD, GPIO_Pin_15);
-			set = 0;
-		}
-		Delay(1000);
 	}
-
 	return 0;
 }
 
@@ -137,7 +120,7 @@ static void AudioCallback(void *context, int buffer) {
 	}
 }
 
-void init() {
+void init() { //COULD BE OFFBOARDED TO START
 	GPIO_InitTypeDef  GPIO_InitStructure;
 	USART_InitTypeDef USART_InitStructure;
 	// ---------- SysTick timer -------- //
@@ -172,7 +155,7 @@ void init() {
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
 	GPIO_Init(GPIOC, &GPIO_InitStructure);
 
 	GPIO_PinAFConfig(GPIOC, GPIO_PinSource10, GPIO_AF_UART4);
@@ -200,7 +183,19 @@ void timing_handler() {
 	}
 
 	time_var2++;
+	tick_ms++;
 }
+
+/**
+ * @brief Return the systick val in ms
+ * 
+ * @return
+ */
+uint32_t getTick()
+{
+	return tick_ms;
+}
+
 
 /*
  * Delay a number of systick cycles
