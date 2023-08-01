@@ -34,5 +34,6 @@ int write_port(int fd, uint8_t * buffer, size_t size);
 int recieve(uint8_t * data, size_t size, size_t timeout_ms, int fd);
 int recievePing(uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms, int fd);
 
+double getTimeDiff_ms(struct timeval start, struct timeval end);
 
 

@@ -7,9 +7,9 @@
 #define WORD_SIZE 4
 
 //PC constants
-#define BAUD_RATE 115200
-#define DEVICE_FILE "/dev/cu.usbserial-0001"
+#define BAUD_RATE 230400 //115200
+#define DEVICE_FILE "/dev/cu.YECL_BLE_MOD"
 #define BIN_FILE "/Users/samdetor/STM32F4_Discovery_MP3/Offloading/remoteInitPC/bin/InitCode.bin"
 
 //Both
-#define COMMS_TIMEOUT 400
+#define COMMS_TIMEOUT 1000

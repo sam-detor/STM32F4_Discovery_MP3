@@ -306,3 +306,9 @@ int send(uint8_t *data, size_t timeout_ms, size_t size, int fd)
     
     return 0;
 }
+
+int testSendData(int fd)
+{
+    const char* string = "Hello World\n";
+    write_port(fd, (uint8_t *) string, 12);
+}

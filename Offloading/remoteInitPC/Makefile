@@ -17,7 +17,7 @@ RemoteInitPC: $(OBJS)
 	$(CC) -o $(BUILD_DIR)/$@ $^ $(CFLAGS)
 
 run:
-	$(BUILD_DIR)/remoteInitPC &
+	$(BUILD_DIR)/remoteInitPC
 
 clean:
 	rm -f $(OBJS) $(BUILD_DIR)/RemoteInitPC

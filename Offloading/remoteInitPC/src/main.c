@@ -15,10 +15,29 @@ int main(void) {
     
     //Initializing Comms
     fd = commsInit(DEVICE_FILE, BAUD_RATE);
+    printf("fd: %d\n", fd);
 
     //sending code on device ping
     ret = sendDataAfterPing(BIN_FILE, fd, buffer, COMMS_TIMEOUT);
-    
+    close(fd);
+    // const char* string = "Hello World\0";
+    // ret = write_port(fd, (uint8_t *) string, 12);
+    // char newString[12];
+    // while(1)
+    // {
+    //     ret = read_port(fd,(uint8_t*) newString, 12); 
+    //     if (ret == 12)
+    //     {
+    //         printf("Response: %s\n", newString);
+    //         ret = close(fd);
+    //         if (ret != 0)
+    //         {
+    //             printf("Ret: %d", ret);
+    //         }
+    //         return 0;
+    //     }
+    // }
+
     return ret;
 }
 
@@ -28,6 +47,8 @@ int sendCode(const char* file, int fd)
     FILE *fileptr;
     uint8_t *buffer;
     long filelen;
+    struct timeval timeStart;
+    struct timeval timeNow;
 
     fileptr = fopen(file, "rb");  // Open the file in binary mode
     fseek(fileptr, 0, SEEK_END);          // Jump to the end of the file
@@ -40,10 +61,16 @@ int sendCode(const char* file, int fd)
     printf("File size: %ld\n", filelen);
     
     //send the file
+   
+    //get start time
+    gettimeofday(&timeStart, NULL);
     int ret = send(buffer, SEND_TIMEOUT, filelen, fd);
+    gettimeofday(&timeNow, NULL);
     if (ret == 0)
     {
+        double time = getTimeDiff_ms(timeStart, timeNow) / 1000;
         printf("sent well\n");
+        printf("Time: %f\n", time);
     }
     free(buffer);
     return ret;
@@ -55,7 +82,7 @@ sendDataAfterPing(const char* file, int fd, uint8_t buffer[MAX_PACKET_SIZE], siz
     int error_counter = 0;
     while(1)
     {
-        ret = recievePing(buffer,400,fd);
+        ret = recievePing(buffer,1000,fd);
         if (ret == 0)
         {
             printf("Got ping, sending code...\n");

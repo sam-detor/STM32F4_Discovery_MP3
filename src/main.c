@@ -36,6 +36,18 @@ int main(void) {
 	PlayAudioWithCallback(AudioCallback, 0);
 
 	for(;;) {
+
+
+		// ret = HAL_UART_Receive(UART4,(uint8_t*) array, 12, 400);
+		// if (ret == 0)
+		// {
+		// 	GPIO_SetBits(GPIOD, GPIO_Pin_15);
+		// 	ret = HAL_UART_Transmit(UART4, (uint8_t*)array, 12, 400);
+		// 	if (ret == 0)
+		// 	{
+		// 		GPIO_SetBits(GPIOD, GPIO_Pin_14);
+		// 	}
+		// }
 		/*
 		 * Check if user button is pressed
 		 */
@@ -136,7 +148,7 @@ void init() {
 	// Enable full access to FPU (Should be done automatically in system_stm32f4xx.c):
 	//SCB->CPACR |= ((3UL << 10*2)|(3UL << 11*2));  // set CP10 and CP11 Full Access
 
-	// // GPIOD Periph clock enable
+	// GPIOD Periph clock enable
 	// RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
 
 	// // Configure PD12, PD13, PD14 and PD15 in output pushpull mode
@@ -166,7 +178,7 @@ void init() {
 	GPIO_PinAFConfig(GPIOC, GPIO_PinSource11, GPIO_AF_UART4);
 
 	// Conf
-	USART_InitStructure.USART_BaudRate = 115200;
+	USART_InitStructure.USART_BaudRate = 230400;
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
 	USART_InitStructure.USART_StopBits = USART_StopBits_1;
 	USART_InitStructure.USART_Parity = USART_Parity_No;

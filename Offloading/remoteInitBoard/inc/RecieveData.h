@@ -20,7 +20,6 @@
 #define PREAMBLE_SIZE 4
 
 //Port Constants
-#define BAUD_RATE 115200
 
 //Error Codes
 #define TIMEOUT -1
@@ -70,5 +69,5 @@ int getPacketFromData(uint8_t *data, size_t* placeholder, uint8_t buffer[MAX_PAC
 int recievePacket(uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms, USART_TypeDef* USARTx);
 
 //HAL replacement function defs
-int HAL_UART_Transmit(USART_TypeDef* USARTx, const uint8_t *pData, uint16_t Size, uint32_t Timeout);
-int HAL_UART_Receive(USART_TypeDef* USARTx, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+//int HAL_UART_Transmit(USART_TypeDef* USARTx, const uint8_t *pData, uint16_t Size, uint32_t Timeout);
+//int HAL_UART_Receive(USART_TypeDef* USARTx, uint8_t *pData, uint16_t Size, uint32_t Timeout);

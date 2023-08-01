@@ -109,6 +109,10 @@ int readStuffed(uint8_t *buffer, size_t size, size_t* placeholder, uint8_t byteR
     }
     else if(*placeholder == 0 || *placeholder == 1) //if the first two bytes aren't flags
     {
+        if(byteRecieved == 0xFF)
+        {
+            return 0; //this just means there is no data rn;
+        }
         fprintf(stderr, "Failed with invalid packet: Started reading in the middle of a packet\n");
         return DATA_CORRUPTION;
     }

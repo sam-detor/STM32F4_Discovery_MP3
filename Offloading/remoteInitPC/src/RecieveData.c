@@ -115,6 +115,7 @@ int recievePacket(uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms, int fd)
         ssize_t r = read(fd, &byteRecieved, 1);
         if (r > 0)
         {
+            printf("ByteRecieved: %02X\n", byteRecieved);
             ret = readStuffed(buffer, MAX_PACKET_SIZE, &placeholder, byteRecieved, &escaped); //unstuffs the recieved bytes and saves them in the buffer provided
             if (ret < 0)
             {
