@@ -18,7 +18,7 @@
 #define FAILED_TO_READ -7
 
 //Packet info
-#define MAX_PACKET_SIZE 248
+#define MAX_PACKET_SIZE 262
 
 //Function defs
 //From SendData.c

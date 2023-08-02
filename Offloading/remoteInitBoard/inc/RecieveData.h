@@ -12,9 +12,9 @@
 #define START_PACKET 4
 
 //Packet Constants
-#define MAX_PACKET_SIZE 248//72
+#define MAX_PACKET_SIZE 262//72
 #define OVERHEAD 8
-#define FRAME_DATA_FIELD_SIZE 240
+#define FRAME_DATA_FIELD_SIZE 254
 #define PREAMBLE 0x7e7e
 #define POSTAMBLE 0x7e7e
 #define PREAMBLE_SIZE 4
