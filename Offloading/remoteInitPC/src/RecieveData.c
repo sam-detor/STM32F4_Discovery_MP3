@@ -23,7 +23,7 @@ int recieve(uint8_t * data, size_t size, size_t timeout_ms, int fd)
 {
     //Variable defs
     CommsPacket packetToSend;
-    uint8_t buffer[72];
+    uint8_t buffer[MAX_PACKET_SIZE];
     int ret;
     ReceiveCase state = RECIEVE;
     int timesTried = 0;

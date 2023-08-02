@@ -256,6 +256,7 @@ int send(uint8_t *data, size_t timeout_ms, size_t size, int fd)
     {
         switch(state) {
             case MAKE_PACKET: //Get the next packet from the data buffer according to the value of placeholder
+                printf("Here\n");
                 ret = getPacketFromData(data, &placeholder, buffer, size);
                 if (ret < 0)
                 {

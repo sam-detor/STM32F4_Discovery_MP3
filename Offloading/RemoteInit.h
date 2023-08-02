@@ -12,4 +12,4 @@
 #define BIN_FILE "/Users/samdetor/STM32F4_Discovery_MP3/Offloading/remoteInitPC/bin/InitCode.bin"
 
 //Both
-#define COMMS_TIMEOUT 1000
+#define COMMS_TIMEOUT 30000

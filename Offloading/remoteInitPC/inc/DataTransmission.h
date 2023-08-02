@@ -2,7 +2,7 @@
 
 //Packet Constants
 #define OVERHEAD 8
-#define FRAME_DATA_FIELD_SIZE 64
+#define FRAME_DATA_FIELD_SIZE 240
 #define PREAMBLE 0x7e7e
 #define POSTAMBLE 0x7e7e
 #define PREAMBLE_SIZE 4

@@ -1,6 +1,6 @@
 #include "main.h"
 
-#define SEND_TIMEOUT 1000
+#define SEND_TIMEOUT 40000
 
 //function declarations
 sendDataAfterPing(const char* file, int fd, uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms);
@@ -11,7 +11,7 @@ int main(void) {
     //variable defs
     int fd;
     int ret;
-    uint8_t buffer[72];
+    uint8_t buffer[MAX_PACKET_SIZE];
     
     //Initializing Comms
     fd = commsInit(DEVICE_FILE, BAUD_RATE);
