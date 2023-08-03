@@ -15,4 +15,4 @@ This code uses UART4 on the STM32f407 discovery board to communicate with the bl
 The code also requires that the HC-05 module be paired with the computer by the user, so be sure to do that before running the code.
 
 ## Running the code
-Run 'make' and then 'make init-bin' in this dir to make the code and the offloaded binary. Then run 'make' in the remoteInitPC dir. Finally, run 'make flash' in this dir, and once the code is flashed, the music should play and the leds should flash. Press the blue button to adjust the volume.
+Run `make` and then `make init-bin` in this dir to make the code and the offloaded binary. Then run `make` in the remoteInitPC dir. Finally, run `make flash` in this dir, and once the code is flashed, the music should play and the leds should flash. Press the blue button to adjust the volume.
