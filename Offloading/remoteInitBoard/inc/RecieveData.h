@@ -20,7 +20,7 @@
 #define PREAMBLE_SIZE 4
 
 //Port Constants
-#define BAUD_RATE 115200
+#define BAUD_RATE 460800//115200
 
 //Error Codes
 #define TIMEOUT -1

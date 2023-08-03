@@ -62,6 +62,7 @@ int open_serial_port(const char * device, uint32_t baud_rate)
   case 19200:  cfsetospeed(&options, B19200);  break;
   case 38400:  cfsetospeed(&options, B38400);  break;
   case 115200: cfsetospeed(&options, B115200); break;
+  case 460800: cfsetospeed(&options, 460800); break;
   default:
     fprintf(stderr, "warning: baud rate %u is not supported, using 9600.\n",
       baud_rate);
