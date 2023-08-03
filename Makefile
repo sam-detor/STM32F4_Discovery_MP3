@@ -61,10 +61,10 @@ INIT_BIN_SRCS = $(SRCS)
 #SRCS += lib/startup_stm32f4xx.s
 
 #add init_bin startup file
-INIT_BIN_SRCS += Offloading/initBinStartUp.s
+INIT_BIN_SRCS += OffloadingFramework/initBinStartUp.s
 
 # Libraries to use
-LIBS = -Llib -lstm32f4 -Lhelix -lhelix -lm -LOffloading/RemoteInitBoard/build -lremoteInitBoard #I added the last two
+LIBS = -Llib -lstm32f4 -Lhelix -lhelix -lm -LOffloadingFramework/RemoteInitBoard/build -lremoteInitBoard #I added the last two
 
 OBJS = $(SRCS:.c=.o)
 
@@ -77,7 +77,7 @@ all: lib proj
 lib:
 	$(MAKE) -C lib FLOAT_TYPE=$(FLOAT_TYPE)
 	$(MAKE) -C helix FLOAT_TYPE=$(FLOAT_TYPE)
-	$(MAKE) -C Offloading/remoteInitBoard FLOAT_TYPE=$(FLOAT_TYPE)
+	$(MAKE) -C OffloadingFramework/remoteInitBoard FLOAT_TYPE=$(FLOAT_TYPE)
 
 proj: 	$(OUTPATH)/$(PROJ_NAME).elf
 
@@ -96,7 +96,7 @@ clean:
 	rm -f $(OUTPATH)/$(PROJ_NAME).bin
 	$(MAKE) clean -C lib
 	$(MAKE) clean -C helix
-	$(MAKE) clean -C Offloading/remoteInitBoard
+	$(MAKE) clean -C OffloadingFramework/remoteInitBoard
 
 
 OPENOCD				?= openocd
@@ -120,7 +120,7 @@ debug:
 #############################################################################################################################
 #                                             Creating the init bin                                                        #
 #############################################################################################################################
-INIT_OUT = /Users/samdetor/STM32F4_Discovery_MP3/Offloading/remoteInitPC/bin
+INIT_OUT = OffloadingFramework/remoteInitPC/bin
 INIT_NAME = InitCode
 
 init-bin: lib init-proj
@@ -129,7 +129,7 @@ init-bin: lib init-proj
 init-proj: 	$(INIT_OUT)/$(INIT_NAME).elf
 
 $(INIT_OUT)/$(INIT_NAME).elf: $(INIT_BIN_SRCS) #lib/startup_stm32f4xx.s
-	$(CC) $(CFLAGS) -T/Users/samdetor/STM32F4_Discovery_MP3/Offloading/InitCode.ld $^ -o $@ $(LIBS)
+	$(CC) $(CFLAGS) -TOffloadingFramework/InitCode.ld $^ -o $@ $(LIBS)
 	$(OBJCOPY) -O ihex $(INIT_OUT)/$(INIT_NAME).elf $(INIT_OUT)/$(INIT_NAME).hex
 	$(OBJCOPY) -O binary $(INIT_OUT)/$(INIT_NAME).elf $(INIT_OUT)/$(INIT_NAME).bin
 

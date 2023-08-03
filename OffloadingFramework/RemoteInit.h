@@ -9,7 +9,6 @@
 //PC constants
 #define BAUD_RATE 460800//230400 //115200
 #define DEVICE_FILE "/dev/cu.YECL_BLE_MOD"
-#define BIN_FILE "/Users/samdetor/STM32F4_Discovery_MP3/Offloading/remoteInitPC/bin/InitCode.bin"
 
 //Both
 #define COMMS_TIMEOUT 30000

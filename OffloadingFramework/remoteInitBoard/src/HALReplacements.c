@@ -1,4 +1,21 @@
+/**
+ * @file HALReplacements.c
+ * @author Sam Detor (sam.detor@yale.edu)
+ * @brief This file re-implements HAL_UART_Receive and HAL_UART_Transmit so they can be used seperately from the rest of the HAL library. The macros
+ *        and #defines were all copied from STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h. HAL_UART_Receive, HAL_UART_Transmit, and UART_WaitOnFlagUntilTimeout
+ *        are modified versions of the methods that can be found here: STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c.
+ * @version 0.1
+ * @date 2023-08-03
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
+//Includes
+
 #include "RecieveData.h"
+
+//Constants
 
 #define UART_FLAG_TXE                       ((uint32_t)USART_SR_TXE)
 #define UART_FLAG_TC                        ((uint32_t)USART_SR_TC)
@@ -6,6 +23,8 @@
 #define MAX_DELAY                           1000000 //arbitrary val right now
 #define TRUE                                1
 #define FALSE                               0
+
+//Macros
 
 /** @brief  Checks whether the specified UART flag is set or not.
   * @param  __HANDLE__ specifies the UART Handle.
@@ -37,27 +56,25 @@
   } while(0)
 
 
+//Global Variables
 
-//global Vars
 uint8_t transmitFree = 1;
 uint8_t recieveFree = 1;
 
-//function defs
+//function definitions
+
 static int UART_WaitOnFlagUntilTimeout(USART_TypeDef* USARTx, uint32_t Flag, FlagStatus Status,
                                                      uint32_t Tickstart, uint32_t Timeout);
 
 
-/** //NEED TO FIX
-  * @brief  Sends an amount of data in blocking mode.
-  * @note   When UART parity is not enabled (PCE = 0), and Word Length is configured to 9 bits (M1-M0 = 01),
-  *         the sent data is handled as a set of u16. In this case, Size must indicate the number
-  *         of u16 provided through pData.
+/**
+  * @brief  Sends an amount of data in blocking mode. Simplified implementation of the HAL_UART_Transmit method.
   * @param  USARTx Pointer to a UART_TypeDef structure that contains
   *               the configuration information for the specified UART module.
-  * @param  pData Pointer to data buffer (u8 or u16 data elements).
-  * @param  Size  Amount of data elements (u8 or u16) to be sent
+  * @param  pData Pointer to data buffer (u8 data elements).
+  * @param  Size  Amount of data elements (u8) to be sent
   * @param  Timeout Timeout duration
-  * @retval HAL status
+  * @retval 0 on sucess, other on error (See error codes in OffloadingFramework/remoteInitBoard/inc/RecieveData.h)
   */
 int HAL_UART_Transmit(USART_TypeDef* USARTx, const uint8_t *pData, uint16_t Size, uint32_t Timeout)
 {
@@ -68,7 +85,7 @@ int HAL_UART_Transmit(USART_TypeDef* USARTx, const uint8_t *pData, uint16_t Size
     //makes sure only one transfer happens at a time
     if(transmitFree)
     {
-        if ((pData == NULL) || (Size == 0U))
+        if ((pData == NULL) || (Size == 0U)) //if theres no data or size is zero, return with error
         {
             return BAD_PARAM;
         }
@@ -77,25 +94,25 @@ int HAL_UART_Transmit(USART_TypeDef* USARTx, const uint8_t *pData, uint16_t Size
     }
     else
     {
-        return BUSY;
+        return BUSY; //someone else is transmitting right now
     }
 
     tickstart = *tick_ms; /* Init tickstart for timeout management */
+                          //tick_ms is a pointer to a value that increments every 1ms, is defined in RemoteInitBoard.c
 
     while (dataTransfered < Size)
     {
-      if (UART_WaitOnFlagUntilTimeout(USARTx, UART_FLAG_TXE, RESET, tickstart, Timeout) != 0)
+      if (UART_WaitOnFlagUntilTimeout(USARTx, UART_FLAG_TXE, RESET, tickstart, Timeout) != 0) //if it hasn't timed-out yet
       {
-        transmitFree = TRUE;
+        transmitFree = TRUE; //allow others to transmit now
         return TIMEOUT;
       }
-      USART_SendData(USARTx, *pdata8bits);
-      //USARTx->DR = (uint8_t)(*pdata8bits & 0xFFU);
+      USART_SendData(USARTx, *pdata8bits); //send the data one byte at a time, USART_SendData defined in stm32f4xx_usart.c
       pdata8bits++;
       dataTransfered++;
     }
 
-    if (UART_WaitOnFlagUntilTimeout(USARTx, UART_FLAG_TC, RESET, tickstart, Timeout) != 0)
+    if (UART_WaitOnFlagUntilTimeout(USARTx, UART_FLAG_TC, RESET, tickstart, Timeout) != 0) //free service and return if reached timeout
     {
       transmitFree = TRUE;
       return TIMEOUT;
@@ -109,13 +126,10 @@ int HAL_UART_Transmit(USART_TypeDef* USARTx, const uint8_t *pData, uint16_t Size
 
 /**
   * @brief  Receives an amount of data in blocking mode.
-  * @note   When UART parity is not enabled (PCE = 0), and Word Length is configured to 9 bits (M1-M0 = 01),
-  *         the received data is handled as a set of u16. In this case, Size must indicate the number
-  *         of u16 available through pData.
   * @param  USARTx Pointer to a UART_TypeDef structure that contains
   *               the configuration information for the specified UART module.
-  * @param  pData Pointer to data buffer (u8 or u16 data elements).
-  * @param  Size  Amount of data elements (u8 or u16) to be received.
+  * @param  pData Pointer to data buffer (u8 elements).
+  * @param  Size  Amount of data elements (u8) to be received.
   * @param  Timeout Timeout duration
   * @retval HAL status
   */
@@ -174,7 +188,7 @@ int HAL_UART_Receive(USART_TypeDef* USARTx, uint8_t *pData, uint16_t Size, uint3
   * @param  Status The actual Flag status (SET or RESET).
   * @param  Tickstart Tick start value
   * @param  Timeout Timeout duration
-  * @retval HAL status
+  * @retval  0 on sucess, TIMEOUT (-1) on timeout
   */
 static int UART_WaitOnFlagUntilTimeout(USART_TypeDef* USARTx, uint32_t Flag, FlagStatus Status,
                                                      uint32_t Tickstart, uint32_t Timeout)

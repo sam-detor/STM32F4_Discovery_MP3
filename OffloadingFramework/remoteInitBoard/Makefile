@@ -39,7 +39,7 @@ CFLAGS += -ffreestanding -nostdlib
 CFLAGS += -Iinc -Iinc/core
 
 #SRCS  = stm32f4_discovery.c
-SRCS = stm32f4xx_usart.c HALReplacements.c PacketHandling.c RecieveData.c RemoteInitBoard.c
+SRCS = stm32f4xx_usart.c HALReplacements.c RecieveData.c RemoteInitBoard.c
 
 OBJS = $(SRCS:%.c=$(BUILD_DIR)/%.o)
 

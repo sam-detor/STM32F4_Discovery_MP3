@@ -1,9 +1,7 @@
 #include "main.h"
 
-#define SEND_TIMEOUT 40000
-
 //function declarations
-sendDataAfterPing(const char* file, int fd, uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms);
+sendDataAfterPing(int fd, uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms);
 
 //waits for the ping from the board and then sends the code
 int main(void) {
@@ -21,7 +19,7 @@ int main(void) {
     printf("fd: %d\n", fd);
 
     //sending code on device ping
-    ret = sendDataAfterPing(BIN_FILE, fd, buffer, COMMS_TIMEOUT);
+    ret = sendDataAfterPing(fd, buffer, COMMS_TIMEOUT);
     close(fd);
     // const char* string = "Hello World\0";
     // ret = write_port(fd, (uint8_t *) string, 12);
@@ -44,7 +42,7 @@ int main(void) {
     return ret;
 }
 
-int sendCode(const char* file, int fd)
+int sendCode(int fd)
 {
     //from: https://stackoverflow.com/questions/22059189/read-a-file-as-byte-array
     FILE *fileptr;
@@ -53,8 +51,9 @@ int sendCode(const char* file, int fd)
     struct timeval timeStart;
     struct timeval timeNow;
 
-    fileptr = fopen(file, "rb");  // Open the file in binary mode
-    fseek(fileptr, 0, SEEK_END);          // Jump to the end of the file
+    fileptr = fopen("bin/InitCode.bin", "rb");  // Open the file in binary mode
+    fseek(fileptr, 0, SEEK_END); 
+          // Jump to the end of the file
     filelen = ftell(fileptr);             // Get the current byte offset in the file
     rewind(fileptr);                      // Jump back to the beginning of the file
 
@@ -67,7 +66,7 @@ int sendCode(const char* file, int fd)
    
     //get start time
     gettimeofday(&timeStart, NULL);
-    int ret = send(buffer, SEND_TIMEOUT, filelen, fd);
+    int ret = send(buffer, COMMS_TIMEOUT, filelen, fd);
     gettimeofday(&timeNow, NULL);
     if (ret == 0)
     {
@@ -79,7 +78,7 @@ int sendCode(const char* file, int fd)
     return ret;
 }
 
-sendDataAfterPing(const char* file, int fd, uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms)
+sendDataAfterPing(int fd, uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms)
 {
     int ret;
     int error_counter = 0;
@@ -102,6 +101,6 @@ sendDataAfterPing(const char* file, int fd, uint8_t buffer[MAX_PACKET_SIZE], siz
 
         }
     }
-    ret = sendCode(file, fd);
+    ret = sendCode(fd);
     return ret;
 }

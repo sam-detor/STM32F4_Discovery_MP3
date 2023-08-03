@@ -4,8 +4,8 @@
             "name": "Mac",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/Offloading/remoteInitBoard/inc",
-                "${workspaceFolder}/Offloading/remoteInitPC/inc"
+                "${workspaceFolder}/OffloadingFramework/remoteInitBoard/inc",
+                "${workspaceFolder}/OffloadingFramework/remoteInitPC/inc"
             ],
             "macFrameworkPath": [
                 "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks"
