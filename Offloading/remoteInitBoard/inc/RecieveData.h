@@ -31,6 +31,7 @@
 #define FAILED_TO_READ -7
 #define BAD_PARAM -8
 #define BUSY -9
+#define PRE_PACKET_DATA_CORRUPTION -10
 
 //Typedefs
 typedef struct header {

@@ -178,7 +178,7 @@ void init() {
 	GPIO_PinAFConfig(GPIOC, GPIO_PinSource11, GPIO_AF_UART4);
 
 	// Conf
-	USART_InitStructure.USART_BaudRate = 230400;
+	USART_InitStructure.USART_BaudRate = 460800;//230400;
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
 	USART_InitStructure.USART_StopBits = USART_StopBits_1;
 	USART_InitStructure.USART_Parity = USART_Parity_No;

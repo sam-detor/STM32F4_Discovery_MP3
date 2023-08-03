@@ -16,6 +16,7 @@
 #define MANY_FAILS -5 //failed to send too many times
 #define UNKNOWN_ERROR -6
 #define FAILED_TO_READ -7
+#define PRE_PACKET_DATA_CORRUPTION -10
 
 //Packet info
 #define MAX_PACKET_SIZE 262

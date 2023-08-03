@@ -113,7 +113,7 @@ int readStuffed(uint8_t *buffer, size_t size, size_t* placeholder, uint8_t byteR
         {
             return 0; //this just means there is no data rn;
         }
-        fprintf(stderr, "Failed with invalid packet: Started reading in the middle of a packet\n");
+        //fprintf(stderr, "Failed with invalid packet: Started reading in the middle of a packet\n");
         return DATA_CORRUPTION;
     }
     else if(byteRecieved == ESC_BYTE) //if recieved an escape byte, don't store in buffer, but set escaped to true

@@ -12,9 +12,12 @@ int main(void) {
     int fd;
     int ret;
     uint8_t buffer[MAX_PACKET_SIZE];
+    struct termios options;
     
     //Initializing Comms
     fd = commsInit(DEVICE_FILE, BAUD_RATE);
+    ret = tcgetattr(fd, &options);
+    printf("c_ispeed: %d,c_ospeed: %d\n",options.c_ispeed, options.c_ospeed);
     printf("fd: %d\n", fd);
 
     //sending code on device ping

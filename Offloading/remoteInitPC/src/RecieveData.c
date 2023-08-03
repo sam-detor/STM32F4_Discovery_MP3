@@ -144,7 +144,7 @@ int recievePacket(uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms, int fd)
         {                              // if flagBytesRead doesn't equal 4 or 0, this indicates some sort of data corruption has happened
             return TIMEOUT; //timeout
         }
-        fprintf(stderr, "Warning: Packet corrupted\n");
+        //fprintf(stderr, "Warning: Packet corrupted\n");
         return DATA_CORRUPTION; //data corruption
     }
 
@@ -299,6 +299,10 @@ int recievePing(uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms, int fd)
     ret = recievePacket(buffer,timeout_ms,fd);
     if (ret < 0)
     {
+        if (ret == DATA_CORRUPTION) //this data
+        {
+            return TIMEOUT;
+        }
         return ret;
     }
     ret = parseMessage(buffer);
