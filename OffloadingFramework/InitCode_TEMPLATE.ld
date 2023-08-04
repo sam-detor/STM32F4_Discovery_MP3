@@ -17,10 +17,9 @@ SECTIONS
   .text :
   {
     . = ALIGN(4);
-    *(.text*)
+    *(.text*)           /* .text* sections (code) */
     *(.text)           /* .text sections (code) */
-                       /* .text* sections (code) */
-  
+                      
     _etext = .;        /* define a global symbols at end of code */
     _exit = .;
   } >RAM

@@ -1,3 +1,8 @@
+/**
+* This start up script is used when generating the offloaded code binary (InitCode.bin). Since it is compiled with flags that make
+* sure all unused functions are not included in the final binary, this makes sure that the only method offloadedCode and all the 
+* methods it calls are included in the final offloaded binary
+*/
   .syntax unified
   .cpu cortex-m3
   .fpu softvfp
@@ -5,9 +10,7 @@
 
 /**
  * @brief  This is the code that gets called when the processor first
- *          starts execution following a reset event. Only the absolutely
- *          necessary set is performed, after which the application
- *          supplied main() routine is called.
+ *          starts execution following a reset event.
  * @param  None
  * @retval : None
 */

@@ -19,5 +19,8 @@ build: $(OBJS)
 run:
 	$(BUILD_DIR)/RemoteInitPC
 
+.PHONY: remoteInitPC
+remoteInitPC: build run
+
 clean:
 	rm -f $(OBJS) $(BUILD_DIR)/RemoteInitPC
