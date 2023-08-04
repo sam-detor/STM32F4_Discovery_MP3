@@ -1,4 +1,16 @@
-#include "PacketHandling.h"
+/**
+ * @file PacketHandling.c
+ * @author Sam Detor (sam.detor@yale.edu)
+ * @brief  This file holds all the helper data transmission methods that are used in both SendData.c and RecieveData.c  
+ * @version 0.1
+ * @date 2023-08-04
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
+//includes
+#include "DataTransmission.h"
 
 //Comms packets
 CommsPacket ackPacket;
@@ -38,7 +50,7 @@ int calculateFletchersChecksum(uint8_t* buffer, int dataLen, uint8_t* check1, ui
 }
 
 /**
- * @brief Stuffs bytes from the given packet and sends them over UART
+ * @brief Stuffs bytes from the given packet and sends them to the dev file pointer to by "fd"
  * 
  * @param buffer the packet to send 
  * @param size size of the packet 
@@ -85,7 +97,7 @@ int sendPacket(uint8_t* buffer, int size, int fd)
 }
 
 /**
- * @brief Takes a byte read from UART and un-stuffs it and stores the data in its unstuffed form in "buffer".
+ * @brief Takes a byte read from the port and un-stuffs it and stores the data in its unstuffed form in "buffer".
  * 
  * @param buffer a buffer to store the recieved unstuffed bytes in
  * @param size size of "buffer"
@@ -105,15 +117,14 @@ int readStuffed(uint8_t *buffer, size_t size, size_t* placeholder, uint8_t byteR
     {
         buffer[*placeholder] = byteRecieved;
         *placeholder += 1;
-        return 1;
+        return 1; //lets the caller know a flag byte was received
     }
     else if(*placeholder == 0 || *placeholder == 1) //if the first two bytes aren't flags
     {
-        if(byteRecieved == 0xFF)
+        if(byteRecieved == 0xFF) //this just means there is no data rn;
         {
-            return 0; //this just means there is no data rn;
+            return 0; 
         }
-        //fprintf(stderr, "Failed with invalid packet: Started reading in the middle of a packet\n");
         return DATA_CORRUPTION;
     }
     else if(byteRecieved == ESC_BYTE) //if recieved an escape byte, don't store in buffer, but set escaped to true
@@ -126,7 +137,7 @@ int readStuffed(uint8_t *buffer, size_t size, size_t* placeholder, uint8_t byteR
         *escaped = 0;
         *placeholder += 1;
     }
-    else
+    else //just a normal byte, put it in the buffer normally
     {
         buffer[*placeholder] = byteRecieved;
         *placeholder += 1;

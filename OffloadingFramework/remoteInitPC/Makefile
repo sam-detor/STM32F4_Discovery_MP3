@@ -7,17 +7,17 @@ BUILD_DIR = build
 OBJS = $(SRCS:%.c=$(BUILD_DIR)/%.o)
 
 .PHONY: all
-all: RemoteInitPC run
+all: build run
 
 build/%.o : src/%.c
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-.PHONY: RemoteInitPC
-RemoteInitPC: $(OBJS)
-	$(CC) -o $(BUILD_DIR)/$@ $^ $(CFLAGS)
+.PHONY: build
+build: $(OBJS)
+	$(CC) -o $(BUILD_DIR)/RemoteInitPC $^ $(CFLAGS)
 
 run:
-	$(BUILD_DIR)/remoteInitPC
+	$(BUILD_DIR)/RemoteInitPC
 
 clean:
 	rm -f $(OBJS) $(BUILD_DIR)/RemoteInitPC

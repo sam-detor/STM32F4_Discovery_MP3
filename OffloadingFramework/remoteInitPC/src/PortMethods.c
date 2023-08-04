@@ -1,3 +1,13 @@
+/**
+ * @file PortMethods.c
+ * @brief This file holds the methods that deal directly with the serial ports
+ * @cite Many of the methods were gotten from here: https://www.pololu.com/docs/0J73/15.5
+ *       When this applies, it is noted in the description of those methods
+ * @version 0.1
+ * @date 2023-08-04
+ * 
+ * 
+ */
 #include "DataTransmission.h"
 
 //Many methods in the file were gotten from the code here: https://www.pololu.com/docs/0J73/15.5. This
@@ -117,7 +127,7 @@ int write_port(int fd, uint8_t * buffer, size_t size)
 ssize_t read_port(int fd, uint8_t * buffer, size_t size)
 {
   size_t received = 0;
-  while (received < size)
+  while (received < size) //while more bytes need to be received
   {
     ssize_t r = read(fd, buffer + received, size - received);
     if (r < 0)
@@ -137,7 +147,7 @@ ssize_t read_port(int fd, uint8_t * buffer, size_t size)
 
 /**
  * @brief This method opens the connection to the device file specified in "device" and configures it to
- *        accept data over UART at "baudRate". It also initializes the pre-defined comms packets.
+ *        accept data at "baudRate". It also initializes the pre-defined comms packets.
  * @param device string holding the path to the device file that is to be opened 
  * @param baudRate a unint32_t holding the baud rate specified for the connection. 
  * @return the file descriptor for the open connection on sucess, -1 on failure. 

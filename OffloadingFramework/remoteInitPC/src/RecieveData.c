@@ -1,4 +1,16 @@
-#include "PacketHandling.h"
+/**
+ * @file RecieveData.c
+ * @author Sam Detor (sam.detor@yale.edu)
+ * @brief  This file manages the recieving of data from the bluetooth module using the packet structure explained in DataTransmission.h
+ * @version 0.1
+ * @date 2023-08-03
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
+//Includes
+#include "DataTransmission.h"
 
 //Local typedefs
 typedef enum receiveCase {
@@ -8,18 +20,18 @@ typedef enum receiveCase {
 //Function declarations
 int respond(CommsPacket* packetToSend, ReceiveCase *state, int* timesTried, int fd);
 int processPacket(uint8_t *packet, uint8_t *dataBuff, size_t size, size_t* placeholder, CommsPacket *packetToSend, uint8_t* started, uint8_t* corruptData);
-//Function Bodies
+
 
 /**
- * @brief User facing method to recieve data sent over UART with the "send" method using packet structures and sending protocols defined in 
+ * @brief User facing method to receive data sent over UART with the "send" method using packet structures and sending protocols defined in 
  *        RecieveData.c and SendData.c. Assumes a correctly initialized Hal UART system, will not do any checks to ensure this
- * @param data the data buf to store the recieved data in 
+ * @param data the data buf to store the received data in 
  * @param size the size of the data buf
  * @param timeout_ms how long to wait for data before failing 
- * @param huart a UART_HandleTypeDef correctly initialized  
- * @return 0 on pass and other on fail (see error code map for specific details)
+ * @param fd file descriptor for the open/correctly configured serial port 
+ * @return 0 on pass and other on fail (see error code map in main.h for specific details)
  */
-int recieve(uint8_t * data, size_t size, size_t timeout_ms, int fd)
+int receive(uint8_t * data, size_t size, size_t timeout_ms, int fd)
 {
     //Variable defs
     CommsPacket packetToSend;
@@ -36,19 +48,19 @@ int recieve(uint8_t * data, size_t size, size_t timeout_ms, int fd)
     {
         switch (state)
         {
-            case RECIEVE: //waits for data, recieves it, and copies it into buffer
-                ret = recievePacket(buffer,timeout_ms, fd);
-                if (ret == TIMEOUT) //means the function timed out, 0 data was recieved
+            case RECIEVE: //waits for data, receives it, and copies it into buffer
+                ret = receivePacket(buffer,timeout_ms, fd);
+                if (ret == TIMEOUT) //means the function timed out, 0 data was received
                 {
                     return ret;
                 }
-                else if (ret == DATA_CORRUPTION) //corrupt data was recieved
+                else if (ret == DATA_CORRUPTION) //corrupt data was received
                 {
                     state = RESPOND;
                     packetToSend = badPacket;
                 }
                 else {
-                    state = PROCESS_PACKET; //normal data was recieved, continue on to next phase
+                    state = PROCESS_PACKET; //normal data was received, continue on to next phase
                 }
             break;
 
@@ -57,11 +69,11 @@ int recieve(uint8_t * data, size_t size, size_t timeout_ms, int fd)
                 if (ret < 0)
                 {
                     fprintf(stderr, "Failed at PROCESS_PACKET\n");
-                    return ret; //no room left in the data buff for storage or recieved to many "bad packet" warnings from sender
+                    return ret; //no room left in the data buff for storage or received to many "bad packet" warnings from sender
                 }
                 else if (ret == 1)
                 {
-                   return 0; //recieved end packet 
+                   return 0; //received end packet 
                 }
                 else
                 {
@@ -87,15 +99,15 @@ int recieve(uint8_t * data, size_t size, size_t timeout_ms, int fd)
 }
 
 /**
- * @brief Helper method called inside recieve, if no data is sent within timeout_ms, it will fail. If data is sent, it recieves the data,
- *        un-stuffs the bytes, and stores it in buffer, provided there are no errors with the data recieved
+ * @brief Helper method called inside receive, if no data is sent within timeout_ms, it will fail. If data is sent, it receives the data,
+ *        un-stuffs the bytes, and stores it in buffer, provided there are no errors with the data received
  * 
- * @param buffer where the recieved packet will be stored, MUST be of size MAX_PACKET_SIZE
+ * @param buffer where the received packet will be stored, MUST be of size MAX_PACKET_SIZE
  * @param timeout_ms how long after recieving no data (in ms) before failing
- * @param huart initiazlized UART_HandleTypeDef 
- * @return 0 on pass and other on fail (see error code map for specific details)
+ * @param fd file descriptor for the open/correctly configured serial port
+ * @return 0 on pass and other on fail (see error code map in main.h for specific details)
  */
-int recievePacket(uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms, int fd)
+int receivePacket(uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms, int fd)
 {
     //variable defs
     size_t placeholder = 0;
@@ -110,16 +122,16 @@ int recievePacket(uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms, int fd)
     //get start time
     gettimeofday(&timeStart, NULL);
     
-    while ((flagBytesRead < 4) && (time_elapsed < timeout_ms)) //while you haven't recieved a full packet
+    while ((flagBytesRead < 4) && (time_elapsed < timeout_ms)) //while you haven't received a full packet
     {
-        ssize_t r = read(fd, &byteRecieved, 1);
+        ssize_t r = read(fd, &byteRecieved, 1); //read a byte from the port
         if (r > 0)
         {
             printf("ByteRecieved: %02X\n", byteRecieved);
-            ret = readStuffed(buffer, MAX_PACKET_SIZE, &placeholder, byteRecieved, &escaped); //unstuffs the recieved bytes and saves them in the buffer provided
+            ret = readStuffed(buffer, MAX_PACKET_SIZE, &placeholder, byteRecieved, &escaped); //unstuffs the received bytes and saves them in the buffer provided
             if (ret < 0)
             {
-                int result = tcflush(fd, TCIOFLUSH);  // Flush away any bytes previously written but not read to the port (for both the sender and reciever).
+                int result = tcflush(fd, TCIOFLUSH);  // Flush away any bytes previously written but not read to the port (for both the sender and receiver).
                 if (result)                           // There could be bytes to read after the error has been detected that will mess up future packets
                 {
                     perror("tcflush failed");  // just a warning, not a fatal error
@@ -135,16 +147,16 @@ int recievePacket(uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms, int fd)
             return FAILED_TO_READ;
         }
         
+        //get new time
         gettimeofday(&timeNow, NULL);
         time_elapsed = getTimeDiff_ms(timeStart, timeNow); // gets time elapsed in ms
     }
     if(flagBytesRead < 4)              //readStuffed returns 1 for flag bytes, 0 for normal bytes, and -1 for errors                  
-    {                                  //if flagBytesRead == 4 after the while loop, that indicates a packet was recieved correctly 
-        if(flagBytesRead == 0)         //if flagBytesRead == 0 after the while loop, this indicates no data was recieved and so the method fails due to timeout
+    {                                  //if flagBytesRead == 4 after the while loop, that indicates a packet was received correctly 
+        if(flagBytesRead == 0)         //if flagBytesRead == 0 after the while loop, this indicates no data was received and so the method fails due to timeout
         {                              // if flagBytesRead doesn't equal 4 or 0, this indicates some sort of data corruption has happened
             return TIMEOUT; //timeout
         }
-        //fprintf(stderr, "Warning: Packet corrupted\n");
         return DATA_CORRUPTION; //data corruption
     }
 
@@ -152,17 +164,17 @@ int recievePacket(uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms, int fd)
 }
 
 /**
- * @brief Takes a correctly recieved packet in "packet", checks to make sure the packet is valid, stores data in "dataBuff" if necessary, 
+ * @brief Takes a correctly received packet in "packet", checks to make sure the packet is valid, stores data in "dataBuff" if necessary, 
  *        and then decides how to respond to sender .
  * 
- * @param packet the buffer holding the recieved packet
- * @param dataBuff the buffer where we store all recieved data 
+ * @param packet the buffer holding the received packet
+ * @param dataBuff the buffer where we store all received data 
  * @param size the size of "dataBuff"
  * @param placeholder a pointer to a size_t variable that keeps track of the next empty space in "dataBuff" to store data 
  * @param packetToSend a pointer to a CommsPacket variable that stores the response packet that will be sent to the sender 
- * @param started a pointer to a variable indicating if the start packet has been recieved 
- * @param corruptData a pointer to a variable indicating if the reciever has previously recieved a "bad packet" response from sender 
- * @return 0 on normal packet, 1 on end packet, and other on fail (see error code map for specific details)
+ * @param started a pointer to a variable indicating if the start packet has been received 
+ * @param corruptData a pointer to a variable indicating if the receiver has previously received a "bad packet" response from sender 
+ * @return 0 on normal packet, 1 on end packet, and other on fail (see error code map in main.h for specific details)
  */
 int processPacket(uint8_t *packet, uint8_t *dataBuff, size_t size, size_t* placeholder, CommsPacket *packetToSend, uint8_t* started, uint8_t* corruptData)
 {
@@ -186,24 +198,24 @@ int processPacket(uint8_t *packet, uint8_t *dataBuff, size_t size, size_t* place
     {
         return 1;
     }
-    else if (header->cmd == START_PACKET && *started == 0) //if the start packet has not been recieved and if the current packet is the start packet
+    else if (header->cmd == START_PACKET && *started == 0) //if the start packet has not been received and if the current packet is the start packet
     {
         *packetToSend = ackPacket;
         *started = 1;
         return 0;
     }
-    else if (header->cmd == START_PACKET && *started == 1) //if the start packet was recieved but the current packet is also the start packet
+    else if (header->cmd == START_PACKET && *started == 1) //if the start packet was received but the current packet is also the start packet, that shouldn't happen
     {
         *packetToSend = badPacket;
         return 0;
     }
-    else if(*started == 0 && header->cmd != START_PACKET) //if the start packet has not been recieved
+    else if(*started == 0 && header->cmd != START_PACKET) //if the start packet has not been received
     {
         //first packet should be start packet
         *packetToSend = badPacket;
         return 0;
     }
-    else if(header->cmd == BAD_PACKET) //if BAD_PACKET has been recieved
+    else if(header->cmd == BAD_PACKET) //if BAD_PACKET has been received
     {
         if (*corruptData == 0) //if we haven't sent corrupt data yet
         {
@@ -212,7 +224,7 @@ int processPacket(uint8_t *packet, uint8_t *dataBuff, size_t size, size_t* place
         }
         else
         {
-            fprintf(stderr, "Failed: recieved \"bad packet\" too many times from sender\n");
+            fprintf(stderr, "Failed: received \"bad packet\" too many times from sender\n");
             return MANY_FAILS;
         }
     }
@@ -230,8 +242,8 @@ int processPacket(uint8_t *packet, uint8_t *dataBuff, size_t size, size_t* place
         dataBuff[*placeholder + i] = packet[PREAMBLE_SIZE + i];
     }
 
-    *placeholder += (size_t) header->length;
-    *packetToSend = ackPacket;
+    *placeholder += (size_t) header->length; //updating the placeholder
+    *packetToSend = ackPacket; //will acknowlege the correctly received packet
     return 0;
 }
 
@@ -241,8 +253,8 @@ int processPacket(uint8_t *packet, uint8_t *dataBuff, size_t size, size_t* place
  * @param packetToSend response packet to send, chosen by processPacket
  * @param state a pointer to the current state of the recieving process 
  * @param timesTried a pointer to the amount of times sending has failed and/or a "badPacket" response has been sent in a row 
- * @param huart a properply initialized UART_HandleTypeDef
- * @return returns 0 on sucess/normal operation, and other on fail (see error code map for specific details) 
+ * @param fd file descriptor for the open/correctly configured serial port
+ * @return returns 0 on sucess/normal operation, and other on fail (see error code map in main.h for specific details) 
  */
 int respond(CommsPacket* packetToSend, ReceiveCase* state, int* timesTried,int fd)
 {
@@ -292,25 +304,37 @@ int respond(CommsPacket* packetToSend, ReceiveCase* state, int* timesTried,int f
     }
 }
 
-int recievePing(uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms, int fd)
+/**
+ * @brief This method tries to receive the initial ping from the board. If a packet is received, it
+ *        checks the packet for data corruption and makes sure its the start packet. If this method
+ *        returns 0, it means the ping from the board has been correctly received.
+ * 
+ * @param buffer a uint8_t array of MAX_PACKET_SIZE to store the received packet in
+ * @param timeout_ms how long receivePing should wait before timing out in miliseconds 
+ * @param fd file descriptor for the open/correctly configured serial port 
+ * @return 0 on sucess, other on failure (see error code map in main.h for specific details)
+ */
+int receivePing(uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms, int fd)
 {
+    //variables definitions
     int ret;
     
-    ret = recievePacket(buffer,timeout_ms,fd);
-    if (ret < 0)
+    ret = receivePacket(buffer,timeout_ms,fd); //try to receive a packet from the board
+    if (ret < 0) //if it failed
     {
-        if (ret == DATA_CORRUPTION) //this data
-        {
-            return TIMEOUT;
+        if (ret == DATA_CORRUPTION) //when receiving data from the bluetooth module, there is a lot of noise/garbage characters
+        {                           //sent before the actual data, so I wanted to treat this type of data corruption as less serious
+            return TIMEOUT;         //than the types detected in parseMessage, so if receivePacket detects data corruption, 
+                                    //it will be treated as a timeout (AKA just try again), not a fail (which would mean an exit/step towards and exit)
         }
         return ret;
     }
-    ret = parseMessage(buffer);
+    ret = parseMessage(buffer); //parsing the correctly received packet for corruption
     if (ret < 0)
     {
         return ret;
     }
-    if(((CommsPacket*)buffer)->cmd == START_PACKET)
+    if(((CommsPacket*)buffer)->cmd == START_PACKET) //if it is a start packet, success!
     {
         return 0;
     }
