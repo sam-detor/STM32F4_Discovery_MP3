@@ -69,7 +69,7 @@ void UsageFault_Handler(void)
   */
 void SVC_Handler(void)
 {
-  remoteInitSVC();
+  remoteInitSVC(); //method from the remoteInitBoard lib to handle the svc call made by remoteInit
 }
 
 /**

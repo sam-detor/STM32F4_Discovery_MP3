@@ -27,27 +27,16 @@ extern const char mp3_data[];
 #define BUTTON		(GPIOA->IDR & GPIO_Pin_0)
 
 int main(void) {
-	init();
+	init(); //onboard init
 	int volume = 0;
 	
 	// Play mp3
 	hMP3Decoder = MP3InitDecoder();
-	remoteInit(UART4, &time_var2);
+	remoteInit(UART4, &time_var2); // method from the remoteBoardInit library that downloads 
+	                               // and runs the code in the "offloadedCode" method defined below
 	PlayAudioWithCallback(AudioCallback, 0);
 
-	for(;;) {
-
-
-		// ret = HAL_UART_Receive(UART4,(uint8_t*) array, 12, 400);
-		// if (ret == 0)
-		// {
-		// 	GPIO_SetBits(GPIOD, GPIO_Pin_15);
-		// 	ret = HAL_UART_Transmit(UART4, (uint8_t*)array, 12, 400);
-		// 	if (ret == 0)
-		// 	{
-		// 		GPIO_SetBits(GPIOD, GPIO_Pin_14);
-		// 	}
-		// }
+	for(;;) { //loop to listen for a button press, which changes the audio volume
 		/*
 		 * Check if user button is pressed
 		 */
@@ -64,7 +53,6 @@ int main(void) {
 					volume = 1;
 					SetAudioVolume(0xAF);
 				}
-
 
 				while(BUTTON){};
 			}
@@ -148,19 +136,7 @@ void init() {
 	// Enable full access to FPU (Should be done automatically in system_stm32f4xx.c):
 	//SCB->CPACR |= ((3UL << 10*2)|(3UL << 11*2));  // set CP10 and CP11 Full Access
 
-	// GPIOD Periph clock enable
-	// RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
-
-	// // Configure PD12, PD13, PD14 and PD15 in output pushpull mode
-	// GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12 | GPIO_Pin_13| GPIO_Pin_14| GPIO_Pin_15;
-	// GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-	// GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	// GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-	// GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	// GPIO_Init(GPIOD, &GPIO_InitStructure);
-
-
-	// ------ UART ------ //
+	// ------ UART ------ // (for the offloading code framework)
 
 	// Clock
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE);
@@ -190,6 +166,14 @@ void init() {
 	USART_Cmd(UART4, ENABLE);
 }
 
+/**
+ * @brief This is the method that the offloading framework will put in the offloaded binary.
+ * 		  This method will be downloaded into RAM and called by the remoteInit method,
+ * 		  defined in the remoteInitBoard library.
+ *        The code in this method must NOT contain references to global variables.
+ * 		  For additional information on this method, see the OffloadingFramework Readme 		
+ * 
+ */
 int __attribute__((section(".text.offloaded"))) offloadedCode(void) {
 	GPIO_InitTypeDef  GPIO_InitStructure;
 
@@ -204,9 +188,11 @@ int __attribute__((section(".text.offloaded"))) offloadedCode(void) {
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
 	GPIO_Init(GPIOD, &GPIO_InitStructure);
 	
+	//Audio init
 	InitializeAudio(Audio44100HzSettings);
 	SetAudioVolume(0xCF);
 
+	//signal that the code has been sucessfully run
 	GPIO_SetBits(GPIOD, GPIO_Pin_15);
 
 	return 0;
