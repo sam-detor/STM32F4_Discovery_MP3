@@ -108,6 +108,7 @@ int sendDataAfterPing(int fd, uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms
     //Wait for the board's ping
     while(1)
     {
+        printf("Waiting...\n");
         ret = receivePing(buffer,COMMS_TIMEOUT,fd); //attempt to receive the board's ping
         if (ret == 0)
         {

@@ -16,7 +16,7 @@
 #define WORD_SIZE 4
 
 //PC constants
-#define BAUD_RATE 460800//230400
+#define BAUD_RATE 115200 //460800//230400
 #define DEVICE_FILE "/dev/cu.YECL_BLE_MOD"
 
 //Both
