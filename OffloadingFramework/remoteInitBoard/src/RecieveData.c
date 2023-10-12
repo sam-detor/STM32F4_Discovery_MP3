@@ -11,6 +11,8 @@
 #include "RecieveData.h"
 
 //Global Variables
+//this variable is used to detect duplicated data from the sender, if the data packet has an unexpected sign, it will be ignored
+uint8_t expectedPacketSign = EVEN;
 
 //Comms packets
 CommsPacket ackPacket = {header: 0x7e7e, cmd: ACK_PACKET, length: 0, checksum1: 253, checksum2: 119, footer: 0x7e7e};
@@ -50,6 +52,7 @@ int recieve(uint8_t * data, size_t size, size_t timeout_ms, USART_TypeDef* USART
     size_t myPlaceholder = 0;
     uint8_t started = 0;
     uint8_t corruptData = 0;
+    expectedPacketSign = EVEN; //resetting this var at start of send/recieve
 
     //zeroing bytes recieved
     *bytesRecieved = 0;
@@ -212,6 +215,21 @@ int processPacket(uint8_t *packet, uint8_t *dataBuff, size_t size, size_t* place
         {
             return DATA_CORRUPTION; //failed to send correct data too many times 
         }
+    }
+    else if(header->cmd != expectedPacketSign) //duplicated data received, discarding and responding with ack packet
+    {
+        *packetToSend = ackPacket;
+        return 0;
+    }
+
+    //updating the expectedPacketSign (keeps track of if duplicated data is sent or not)
+    if(expectedPacketSign == EVEN)
+    {
+        expectedPacketSign = ODD;
+    }
+    else
+    {
+        expectedPacketSign = EVEN;
     }
     
     //checking there is room in the dataBuff;

@@ -85,6 +85,8 @@
 #define BAD_PACKET 2
 #define END_PACKET 3
 #define START_PACKET 4
+#define ODD 5
+#define EVEN 6
 
 //Packet Constants
 #define MAX_PACKET_SIZE 262

@@ -12,6 +12,9 @@
 //Includes
 #include "DataTransmission.h"
 
+//Global Vars
+uint8_t expectedPacketSign = EVEN;
+
 //Local typedefs
 typedef enum receiveCase {
     RECIEVE, PROCESS_PACKET, RESPOND
@@ -42,6 +45,7 @@ int receive(uint8_t * data, size_t size, size_t timeout_ms, int fd)
     size_t myPlaceholder = 0;
     uint8_t started = 0;
     uint8_t corruptData = 0;
+    expectedPacketSign = EVEN;
     
     //Repeat this cycle until one of the helper methods signals to stop
     while(1)
@@ -227,6 +231,21 @@ int processPacket(uint8_t *packet, uint8_t *dataBuff, size_t size, size_t* place
             fprintf(stderr, "Failed: received \"bad packet\" too many times from sender\n");
             return MANY_FAILS;
         }
+    }
+    else if(header->cmd != expectedPacketSign) //duplicated data received, discarding and responding with ack packet
+    {
+        *packetToSend = ackPacket;
+        return 0;
+    }
+
+    //updating the expectedPacketSign (keeps track of if duplicated data is sent or not)
+    if(expectedPacketSign == EVEN)
+    {
+        expectedPacketSign = ODD;
+    }
+    else
+    {
+        expectedPacketSign = EVEN;
     }
     
     //checking there is room in the dataBuff;

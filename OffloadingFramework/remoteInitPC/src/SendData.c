@@ -17,6 +17,10 @@ enum SendCase {
     MAKE_PACKET, SEND_PACKET, WAIT
 };
 
+//globalVar
+//This variable holds the current data packet sign, which is used by the receiver to detect dropped data
+uint8_t currentPacketSign = EVEN;
+
 /**
  * @brief Get the next packet from the data buffer at the location *placeholder.
  * 
@@ -68,8 +72,18 @@ int getPacketFromData(uint8_t *data, size_t* placeholder, uint8_t buffer[MAX_PAC
 
     //filling in the header data fields
     header->header = PREAMBLE;
-    header->cmd = 0;
+    header->cmd = currentPacketSign;
     header->length = dataInPacket;
+
+    //updating packet sign, this is to for the reciever to use to detect duplicated data
+    if (currentPacketSign == EVEN)
+    {
+        currentPacketSign = ODD;
+    }
+    else
+    {
+        currentPacketSign = EVEN;
+    }
     
    
     //filling in postamble
@@ -177,7 +191,7 @@ int waitForAck(size_t timeout_ms, uint8_t ackBuffer[OVERHEAD], enum SendCase* st
     }
     
     //if readStuffed method or the parseMessage methods detected an error, or if the packet received is not a Comms packet, respond with "bad packet"
-    if (flagBytesRead < 0 || ret < 0 || ((CommsPacket *) ackBuffer)->cmd == 0)
+    if (flagBytesRead < 0 || ret < 0 || ((CommsPacket *) ackBuffer)->cmd == NO_CMD || ((CommsPacket *) ackBuffer)->cmd == EVEN || ((CommsPacket *) ackBuffer)->cmd == ODD)
     {
         printf("Warning: received invalid packet\n");
 
@@ -247,6 +261,7 @@ int send(uint8_t *data, size_t timeout_ms, size_t size, int fd)
     enum SendCase state = WAIT;
     int lengthOfPacket;
     int end = 0;
+    currentPacketSign = EVEN;
 
     //send the start packet
     ret = sendCommsPacket(START_PACKET, fd);
