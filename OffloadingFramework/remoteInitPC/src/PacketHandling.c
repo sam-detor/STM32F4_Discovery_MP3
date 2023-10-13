@@ -50,6 +50,37 @@ int calculateFletchersChecksum(uint8_t* buffer, int dataLen, uint8_t* check1, ui
 }
 
 /**
+ * @brief Calculating the Fletchers Checksum for the given packet. DOES NO CHECKS TO ENSURE DATALEN IS ACCURATE
+ * 
+ * @param buffer the packet that the checksums are going to be calculated off of 
+ * @param dataLen the amount of data in the packet 
+ * @param check1 pointer a uint8_t where you want checksum 1 to be stored 
+ * @param check2 pointer to a uint8_t where you want checksum 2 to be stored  
+ * @return 0, assumes dataLen is accurate 
+ */
+#pragma GCC push_options
+#pragma GCC optimize ("no-peel-loops")
+static void calculateFletchersChecksumNew(uint8_t* buffer, uint32_t dataLen, uint8_t* check1, uint8_t* check2)
+{
+    // Variable defs
+    uint32_t packetLength = dataLen + PREAMBLE_SIZE;
+    uint8_t c1 = 0;
+    uint8_t c2 = 0;
+
+    // Calculating the checksums
+    for (uint32_t i = 0; i < packetLength; i++)
+    {
+        c1 += buffer[i];
+        c2 += c1;
+    }
+
+    // Storing there values in the pointers given
+    *check1 = c1;
+    *check2 = c2;
+}
+#pragma GCC pop_options
+
+/**
  * @brief Stuffs bytes from the given packet and sends them to the dev file pointer to by "fd"
  * 
  * @param buffer the packet to send 
@@ -173,7 +204,7 @@ int parseMessage(uint8_t* buffer)
         return DATA_CORRUPTION;
     }
     
-    //validating checksums
+    //validating checksums CHECKSUM CHANGE
     calculateFletchersChecksum(buffer, header->length, &c1, &c2);
 
     if(footer->checksum1 != c1)
@@ -242,7 +273,7 @@ int sendCommsPacket(int commsType, int fd)
  * 
  * @return int -- always 0
  */
-int commsPacketInit(void)
+int commsPacketInit(void) //CHECKSUM CHANGE
 {
     //acknowlage packet init
     ackPacket.header = PREAMBLE;

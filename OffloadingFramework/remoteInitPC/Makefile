@@ -1,6 +1,6 @@
 BUILD_DIR = build
 CC=$ gcc
-CFLAGS=-std=c11 -Wall -pedantic -g3 -I. -Iinc
+CFLAGS=-std=c11 -std=c99 -Wall -pedantic -g3 -I. -Iinc
 SRCS = main.c SendData.c PortMethods.c PacketHandling.c RecieveData.c
 BUILD_DIR = build
 

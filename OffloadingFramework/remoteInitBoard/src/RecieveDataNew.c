@@ -95,7 +95,7 @@ static int validatePacket(uint8_t *buffer)
         return DATA_CORRUPTION;
     
     // Validating checksums
-    calculateFletchersChecksumNew(buffer, header->length, &c1, &c2);
+    calculateFletchersChecksum(buffer, header->length, &c1, &c2);
 
     if(footer->checksum1 != c1 || footer->checksum2 != c2)
         return DATA_CORRUPTION;
@@ -123,8 +123,9 @@ static int recieveLinkPacket(uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms,
     {
         if (HAL_UART_Receive(USARTx, &byte, 1, timeout_ms))
             return TIMEOUT;
-        if (byte == FLAG_BYTE)
+        if (byte == FLAG_BYTE){
             ++numFlagBytes;
+            buffer[idx++] = byte;}
         else
             numFlagBytes = 0;
     }
@@ -301,4 +302,38 @@ int recieve(uint8_t *data, size_t size, size_t timeout_ms, USART_TypeDef* USARTx
 int sendStartPacket(USART_TypeDef* USARTx)
 {
     return sendLinkPacket((uint8_t *) &startPacket, sizeof(startPacket), USARTx);
+}
+
+
+
+/**
+ * @brief Calculating the Fletchers Checksum for the given packet. DOES NO CHECKS TO ENSURE DATALEN IS ACCURATE
+ * 
+ * @param buffer the packet that the checksums are going to be calculated off of 
+ * @param dataLen the amount of data in the packet 
+ * @param check1 pointer a uint8_t where you want checksum 1 to be stored 
+ * @param check2 pointer to a uint8_t where you want checksum 2 to be stored  
+ * @return 0, assumes dataLen is accurate 
+ */
+int calculateFletchersChecksum(uint8_t* buffer, int dataLen, uint8_t* check1, uint8_t* check2)
+{
+    //variable defs
+    int packetLength = dataLen + PREAMBLE_SIZE;
+    int c1 = 0;
+    int c2 = 0;
+    int i;
+
+    //calculating the checksums
+    for(i = 0; i < packetLength; i++)
+    {
+        c1 += buffer[i];
+        c2 += c1;
+    }
+    c1 %= UINT8_MAX;
+    c2 %= UINT8_MAX;
+
+    //storing there values in the pointers given
+    *check1 = (uint8_t) c1;
+    *check2 = (uint8_t) c2;
+    return 0;
 }

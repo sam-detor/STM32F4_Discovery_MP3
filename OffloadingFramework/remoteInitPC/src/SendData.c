@@ -12,6 +12,8 @@
 //Include statements
 #include "DataTransmission.h"
 
+static void calculateFletchersChecksumNew(uint8_t* buffer, uint32_t dataLen, uint8_t* check1, uint8_t* check2);
+
 //enum declaration 
 enum SendCase {
     MAKE_PACKET, SEND_PACKET, WAIT
@@ -86,7 +88,7 @@ int getPacketFromData(uint8_t *data, size_t* placeholder, uint8_t buffer[MAX_PAC
     }
     
    
-    //filling in postamble
+    //filling in postamble //CHECKSUM CHANGE
     footer = (Footer*)(buffer + PREAMBLE_SIZE + dataInPacket);
     calculateFletchersChecksum(buffer,dataInPacket, &(footer->checksum1), &(footer->checksum2));
     footer->footer = POSTAMBLE;
@@ -332,3 +334,34 @@ int send(uint8_t *data, size_t timeout_ms, size_t size, int fd)
     
     return 0;
 }
+
+/**
+ * @brief Calculating the Fletchers Checksum for the given packet. DOES NO CHECKS TO ENSURE DATALEN IS ACCURATE
+ * 
+ * @param buffer the packet that the checksums are going to be calculated off of 
+ * @param dataLen the amount of data in the packet 
+ * @param check1 pointer a uint8_t where you want checksum 1 to be stored 
+ * @param check2 pointer to a uint8_t where you want checksum 2 to be stored  
+ * @return 0, assumes dataLen is accurate 
+ */
+#pragma GCC push_options
+#pragma GCC optimize ("no-peel-loops")
+static void calculateFletchersChecksumNew(uint8_t* buffer, uint32_t dataLen, uint8_t* check1, uint8_t* check2)
+{
+    // Variable defs
+    uint32_t packetLength = dataLen + PREAMBLE_SIZE;
+    uint8_t c1 = 0;
+    uint8_t c2 = 0;
+
+    // Calculating the checksums
+    for (uint32_t i = 0; i < packetLength; i++)
+    {
+        c1 += buffer[i];
+        c2 += c1;
+    }
+
+    // Storing there values in the pointers given
+    *check1 = c1;
+    *check2 = c2;
+}
+#pragma GCC pop_options

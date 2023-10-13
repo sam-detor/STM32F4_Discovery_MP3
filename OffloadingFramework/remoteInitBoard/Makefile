@@ -24,7 +24,7 @@ endif
 
 vpath %.c src
 
-CFLAGS  = -g -Os -Wall
+CFLAGS  = -std=gnu99 -g -Os -Wall
 CFLAGS += -mlittle-endian -mthumb -mthumb-interwork -mcpu=cortex-m4
 
 ifeq ($(FLOAT_TYPE), hard)
