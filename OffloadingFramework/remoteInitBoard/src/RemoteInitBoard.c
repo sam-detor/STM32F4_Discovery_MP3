@@ -98,7 +98,7 @@ int doubleWordAlignStack(uint32_t * stack)
  * 
  * @return 1 
  */
-int executeRAMCode(void)
+int __attribute__((naked)) executeRAMCode(void)
 {
 	uint32_t ramCodeStart = ((uint32_t) &_ebss) + 1; //the downloaded code was put right after the bss section in RAM,
 	asm(                                             //the addresses are required to end in 1
@@ -122,15 +122,15 @@ int executeRAMCode(void)
  * 
  * @return 1 
  */
-int returnToNormalExecution(void)
+int __attribute__((naked)) returnToNormalExecution(void)
 {
 	asm(
 		"MSR MSP, %0\n\t"
 		:
 		: "r" (mainStack)); //switch back to main stack
 	asm(
-		"POP {R0}\n\t" //get rid of some extra stack pushes (from calling remoteInitSVC)
-		"POP {R0}\n\t" //get rid of some extra stack pushes (from calling remoteInitSVC)
+		//"POP {R0}\n\t" //get rid of some extra stack pushes (from calling remoteInitSVC)
+		//"POP {R0}\n\t" //get rid of some extra stack pushes (from calling remoteInitSVC)
 		"POP {LR}\n\t" //pop the LR (the exception return LR) off the stack
 		"BX lr\n\t" //perform exception return back into the normal code
 	);
@@ -144,12 +144,12 @@ int returnToNormalExecution(void)
  * 	      helped by the coresponding blog post: https://www.iotality.com/armcm-svc/
  * 
  */
-void remoteInitSVC(void) //asm statements are split for debugging purposes
+void __attribute__((naked)) remoteInitSVC(void) //asm statements are split for debugging purposes
 {
 	asm(
       "MRS	R0, MSP\n\t" //loads the stack pointer into R)
-      "LDR R0, [R0,#32]\n\t"); //gets the stacked PC value into R0. This accounts for the extra stuff on the stack due to the call of the remoteInitSVC
-                                // method. If this piece of code were to be directly in the user handler, it would be #24
+      "LDR R0, [R0,#24]\n\t"); //gets the stacked PC value into R0. This accounts for the extra stuff on the stack due to the call of the remoteInitSVC
+                                // method. If this piece of code were to be directly in the user handler, it would be #24 (32)
 	asm(                      
       "LDRB R0, [R0, #-2]\n\t"); //get the SVC number from the PC value
     asm(

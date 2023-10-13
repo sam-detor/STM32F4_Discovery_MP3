@@ -1,10 +1,10 @@
 #include "RecieveData.h"
 
 // Comms packets
-static CommsPacket ackPacket = {header: 0x7e7e, cmd: ACK_PACKET, length: 0, checksum1: 253, checksum2: 119, footer: 0x7e7e};
-static CommsPacket badPacket = {header: 0x7e7e, cmd: BAD_PACKET, length: 0, checksum1: 254, checksum2: 121, footer: 0x7e7e};
+static CommsPacket ackPacket = {header: 0x7e7e, cmd: ACK_PACKET, length: 0, checksum1: 253, checksum2: 116, footer: 0x7e7e};
+static CommsPacket badPacket = {header: 0x7e7e, cmd: BAD_PACKET, length: 0, checksum1: 254, checksum2: 118, footer: 0x7e7e};
 // static CommsPacket endPacket = {header: 0x7e7e, cmd: END_PACKET, length: 0, checksum1: 0, checksum2: 123, footer: 0x7e7e};
-static CommsPacket startPacket = {header: 0x7e7e, cmd: START_PACKET, length: 0, checksum1: 1, checksum2: 125, footer: 0x7e7e};
+static CommsPacket startPacket = {header: 0x7e7e, cmd: START_PACKET, length: 0, checksum1: 0, checksum2: 122, footer: 0x7e7e};
 
 /**
  * @brief Stuffs bytes from the given packet and sends them over UART
@@ -124,7 +124,10 @@ static int recieveLinkPacket(uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms,
         if (HAL_UART_Receive_Byte(USARTx, &byte, timeout_ms))
             return TIMEOUT;
         if (byte == FLAG_BYTE)
+        {
             ++numFlagBytes;
+            buffer[idx++] = byte;
+        }
         else
             numFlagBytes = 0;
     }
@@ -302,3 +305,36 @@ int sendStartPacket(USART_TypeDef* USARTx)
 {
     return sendLinkPacket((uint8_t *) &startPacket, sizeof(startPacket), USARTx);
 }
+
+/**
+ * @brief Calculating the Fletchers Checksum for the given packet. DOES NO CHECKS TO ENSURE DATALEN IS ACCURATE
+ * 
+ * @param buffer the packet that the checksums are going to be calculated off of 
+ * @param dataLen the amount of data in the packet 
+ * @param check1 pointer a uint8_t where you want checksum 1 to be stored 
+ * @param check2 pointer to a uint8_t where you want checksum 2 to be stored  
+ * @return 0, assumes dataLen is accurate 
+ */
+int calculateFletchersChecksum(uint8_t* buffer, int dataLen, uint8_t* check1, uint8_t* check2)
+{
+    //variable defs
+    int packetLength = dataLen + PREAMBLE_SIZE;
+    int c1 = 0;
+    int c2 = 0;
+    int i;
+
+    //calculating the checksums
+    for(i = 0; i < packetLength; i++)
+    {
+        c1 += buffer[i];
+        c2 += c1;
+    }
+    c1 %= UINT8_MAX;
+    c2 %= UINT8_MAX;
+
+    //storing there values in the pointers given
+    *check1 = (uint8_t) c1;
+    *check2 = (uint8_t) c2;
+    return 0;
+}
+

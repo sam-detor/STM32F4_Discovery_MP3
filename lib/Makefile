@@ -27,7 +27,7 @@ CFLAGS += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 else
 CFLAGS += -msoft-float
 endif
-
+CFLAGS += -ffunction-sections -Wl,--gc-section
 CFLAGS += -ffreestanding -nostdlib
 CFLAGS += -Iinc -Iinc/core -Iinc/peripherals
 

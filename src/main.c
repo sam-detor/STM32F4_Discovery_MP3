@@ -27,7 +27,7 @@ extern const char mp3_data[];
 #define BUTTON		(GPIOA->IDR & GPIO_Pin_0)
 
 int main(void) {
-	init(); //onboard init
+	//init(); //onboard init
 	int volume = 0;
 	
 	// Play mp3

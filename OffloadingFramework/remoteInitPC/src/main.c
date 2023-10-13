@@ -24,6 +24,17 @@ int main(void) {
     
     //Initializing Comms
     fd = commsInit(DEVICE_FILE, BAUD_RATE);
+    printf("Ack\n");
+    printCommsPacket(1);
+
+    printf("Bad\n");
+    printCommsPacket(2);
+
+    printf("end\n");
+    printCommsPacket(3);
+
+    printf("start\n");
+    printCommsPacket(4);
 
     //sending code in OffloadingFramework/remoteInitPC/bin/InitCode.bin after device ping
     ret = sendDataAfterPing(fd, buffer, COMMS_TIMEOUT);
