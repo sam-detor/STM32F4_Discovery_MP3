@@ -29,7 +29,7 @@ SIZE=$ arm-none-eabi-size
 
 BIN = $(OBJCOPY) -O binary -S
 
-CFLAGS  = -std=gnu99 -g -Og -Wall
+CFLAGS  = -std=gnu99 -g -O2 -Wall
 CFLAGS += -mlittle-endian -mthumb -mthumb-interwork -nostartfiles -mcpu=cortex-m4
 
 ifeq ($(FLOAT_TYPE), hard)

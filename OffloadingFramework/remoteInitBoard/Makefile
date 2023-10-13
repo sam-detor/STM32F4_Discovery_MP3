@@ -24,7 +24,7 @@ endif
 
 vpath %.c src
 
-CFLAGS  = -g -Og -Wall
+CFLAGS  = -g -Os -Wall
 CFLAGS += -mlittle-endian -mthumb -mthumb-interwork -mcpu=cortex-m4
 
 ifeq ($(FLOAT_TYPE), hard)
@@ -39,7 +39,7 @@ CFLAGS += -ffreestanding -nostdlib
 CFLAGS += -Iinc -Iinc/core
 
 #SRCS  = stm32f4_discovery.c
-SRCS = stm32f4xx_usart.c HALReplacements.c RecieveData.c RemoteInitBoard.c
+SRCS = stm32f4xx_usart.c HALReplacements.c RecieveDataNew.c RemoteInitBoard.c
 
 OBJS = $(SRCS:%.c=$(BUILD_DIR)/%.o)
 
