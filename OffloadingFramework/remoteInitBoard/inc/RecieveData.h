@@ -128,5 +128,5 @@ typedef enum receiveCase {
 } ReceiveCase;
 
 //HAL replacement function defs
-int HAL_UART_Transmit(USART_TypeDef* USARTx, const uint8_t *pData, uint16_t Size, uint32_t Timeout);
-int HAL_UART_Receive(USART_TypeDef* USARTx, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+int HAL_UART_Transmit_Byte(USART_TypeDef* USARTx, const uint8_t *pByte, uint32_t Timeout);
+int HAL_UART_Receive_Byte(USART_TypeDef* USARTx, uint8_t *pByte, uint32_t Timeout);

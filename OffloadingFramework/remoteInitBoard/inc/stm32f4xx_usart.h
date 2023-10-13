@@ -368,8 +368,8 @@ typedef struct
 /* Exported functions --------------------------------------------------------*/  
 
 /* Data transfers functions ***************************************************/ 
-void USART_SendData(USART_TypeDef* USARTx, uint16_t Data);
-uint16_t USART_ReceiveData(USART_TypeDef* USARTx);
+// void USART_SendData(USART_TypeDef* USARTx, uint16_t Data);
+// uint16_t USART_ReceiveData(USART_TypeDef* USARTx);
 #ifdef __cplusplus
 }
 #endif

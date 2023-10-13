@@ -23,11 +23,11 @@ static int sendLinkPacket(uint8_t *buffer, uint32_t size, USART_TypeDef* USARTx)
     uint8_t *end = buffer + size - 2;
 
     // Send the first two bytes, the preamble.
-    if (HAL_UART_Transmit(USARTx, ptr++, 1, 100))
+    if (HAL_UART_Transmit_Byte(USARTx, ptr++, 100))
         return FAILED_TO_SEND;
-    if (HAL_UART_Transmit(USARTx, ptr++, 1, 100))
+    if (HAL_UART_Transmit_Byte(USARTx, ptr++, 100))
         return FAILED_TO_SEND;
-    
+
     // For the following bytes, escape them if necessary and then send.
     uint8_t esc = ESC_BYTE;
     while (ptr < end)
@@ -35,17 +35,17 @@ static int sendLinkPacket(uint8_t *buffer, uint32_t size, USART_TypeDef* USARTx)
         uint8_t byte = *ptr++;
         if (byte == ESC_BYTE || byte == FLAG_BYTE) {
             byte ^= XOR_BYTE;
-            if (HAL_UART_Transmit(USARTx, &esc, 1, 100))
+            if (HAL_UART_Transmit_Byte(USARTx, &esc, 100))
                 return FAILED_TO_SEND;
         }
-        if (HAL_UART_Transmit(USARTx, &byte, 1, 100))
+        if (HAL_UART_Transmit_Byte(USARTx, &byte, 100))
             return FAILED_TO_SEND;
     }
 
     // Finally send two bytes for the postamble.
-    if (HAL_UART_Transmit(USARTx, ptr++, 1, 100))
+    if (HAL_UART_Transmit_Byte(USARTx, ptr++, 100))
         return FAILED_TO_SEND;
-    if (HAL_UART_Transmit(USARTx, ptr++, 1, 100))
+    if (HAL_UART_Transmit_Byte(USARTx, ptr++, 100))
         return FAILED_TO_SEND;
     
     return 0;
@@ -121,7 +121,7 @@ static int recieveLinkPacket(uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms,
     // Loop until we see two consecutive flag bytes.
     while (numFlagBytes < 2)
     {
-        if (HAL_UART_Receive(USARTx, &byte, 1, timeout_ms))
+        if (HAL_UART_Receive_Byte(USARTx, &byte, timeout_ms))
             return TIMEOUT;
         if (byte == FLAG_BYTE)
             ++numFlagBytes;
@@ -136,13 +136,13 @@ static int recieveLinkPacket(uint8_t buffer[MAX_PACKET_SIZE], size_t timeout_ms,
             return NO_STORAGE;
         
         // Receive a byte.
-        if (HAL_UART_Receive(USARTx, &byte, 1, timeout_ms))
+        if (HAL_UART_Receive_Byte(USARTx, &byte, timeout_ms))
             break;
 
         // If the byte is the escape byte, proceed to read the next byte.
         if (byte == ESC_BYTE)
         {
-            if (HAL_UART_Receive(USARTx, &byte, 1, timeout_ms))
+            if (HAL_UART_Receive_Byte(USARTx, &byte, timeout_ms))
                 break;
             byte ^= XOR_BYTE;
         }
